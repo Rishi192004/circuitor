@@ -1,0 +1,97 @@
+{
+  "circuit_id": "voltage_divider_1",
+  "component_templates": [
+    {
+      "id": "resistor",
+      "name": "Resistor",
+      "category": "passive",
+      "pins_template": [
+        { "name": "p1", "type": "passive" },
+        { "name": "p2", "type": "passive" }
+      ],
+      "default_pins": 2,
+      "property_schema": {
+        "resistance": { "type": "number", "unit": "ohm" }
+      }
+    },
+    {
+      "id": "dc_voltage_source",
+      "name": "DC Voltage Source",
+      "category": "source",
+      "default_pins": 2,
+      "pins_template": [
+        { "name": "positive", "type": "output" },
+        { "name": "negative", "type": "output" }
+      ],
+      "property_schema": {
+        "voltage": { "type": "number", "unit": "volt" }
+      }
+    },
+    {
+      "id": "ground",
+      "name": "Ground",
+      "category": "reference",
+      "default_pins": 1,
+      "pins_template": [
+        { "name": "gnd", "type": "passive" }
+      ],
+      "property_schema": {}
+    }
+  ],
+  "components": [
+    {
+      "id": "V1",
+      "type": "dc_voltage_source",
+      "properties": { "voltage": 12 },
+      "metadata": { "label": "Main Battery" }
+    },
+    {
+      "id": "R1",
+      "type": "resistor",
+      "properties": { "resistance": 1000 },
+      "metadata": { "label": "Top Resistor" }
+    },
+    {
+      "id": "R2",
+      "type": "resistor",
+      "properties": { "resistance": 2000 },
+      "metadata": { "label": "Bottom Resistor" }
+    },
+    {
+      "id": "G1",
+      "type": "ground",
+      "properties": {},
+      "metadata": { "label": "System Ground" }
+    }
+  ],
+  "nets": [
+    {
+      "id": "net_vcc",
+      "wire_type": "power",
+      "endpoints": [
+        { "component_id": "V1", "pin_name": "positive" },
+        { "component_id": "R1", "pin_name": "p1" }
+      ],
+      "properties": { "color": "red" }
+    },
+    {
+      "id": "net_midpoint",
+      "wire_type": "signal",
+      "endpoints": [
+        { "component_id": "R1", "pin_name": "p2" },
+        { "component_id": "R2", "pin_name": "p1" }
+      ],
+      "properties": { "color": "green" }
+    },
+    {
+      "id": "net_ground",
+      "wire_type": "ground",
+      "endpoints": [
+        { "component_id": "R2", "pin_name": "p2" },
+        { "component_id": "V1", "pin_name": "negative" },
+        { "component_id": "G1", "pin_name": "gnd" }
+      ],
+      "properties": { "color": "black" }
+    }
+  ]
+}

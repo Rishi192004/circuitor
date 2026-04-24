@@ -1,0 +1,103 @@
+{
+  "circuit_id": "C1",
+  "component_templates": [
+    {
+      "id": "resistor",
+      "name": "Resistor",
+      "category": "passive",
+      "pins_template": [
+        { "name": "p1", "type": "passive" },
+        { "name": "p2", "type": "passive" }
+      ],
+      "default_pins": 2,
+      "property_schema": {
+        "resistance": { "type": "number", "unit": "ohm" }
+      }
+    },
+    {
+      "id": "bjt_transistor",
+      "name": "BJT Transistor",
+      "category": "active",
+      "default_pins": 3,
+      "pins_template": [
+        { "name": "collector", "type": "output" },
+        { "name": "base", "type": "input" },
+        { "name": "emitter", "type": "output" }
+      ],
+      "property_schema": {
+        "beta": { "type": "number" },
+        "max_voltage": { "type": "number", "unit": "volt" },
+        "max_current": { "type": "number", "unit": "ampere" },
+        "power_rating": { "type": "number", "unit": "watt" }
+      }
+    }
+  ],
+  "components": [
+    {
+      "id": "Q1",
+      "type": "bjt_transistor",
+      "circuit_id": "C1",
+      "properties": {
+        "beta": 100,
+        "max_voltage": 40
+      },
+      "metadata": {
+        "label": "amplifier transistor 1",
+        "position": { "x": 200, "y": 150 }
+      }
+    },
+    {
+      "id": "Q2",
+      "type": "bjt_transistor",
+      "circuit_id": "C1",
+      "properties": {
+        "beta": 100,
+        "max_voltage": 40
+      },
+      "metadata": {
+        "label": "amplifier transistor 2",
+        "position": { "x": 300, "y": 150 }
+      }
+    },
+    {
+      "id": "R1",
+      "type": "resistor",
+      "circuit_id": "C1",
+      "properties": {
+        "resistance": 1000
+      },
+      "metadata": {
+        "label": "pull-up resistor",
+        "position": { "x": 250, "y": 100 }
+      }
+    }
+  ],
+  "nets": [
+    {
+      "id": "net_456",
+      "circuit_id": "C1",
+      "wire_type": "type_1",
+      "endpoints": [
+        { "component_id": "Q1", "pin_name": "collector" },
+        { "component_id": "Q2", "pin_name": "base" }
+      ],
+      "properties": {
+        "thickness": "0.5mm",
+        "color": "red"
+      }
+    },
+    {
+      "id": "net_vcc",
+      "circuit_id": "C1",
+      "wire_type": "type_1",
+      "endpoints": [
+        { "component_id": "R1", "pin_name": "p2" },
+        { "component_id": "Q1", "pin_name": "collector" }
+      ],
+      "properties": {
+        "thickness": "0.5mm",
+        "color": "blue"
+      }
+    }
+  ]
+}
