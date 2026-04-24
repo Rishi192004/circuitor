@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 class GraphBuilder:
     def __init__(self, circuit: Circuit):
         self.circuit = circuit
-        # Adjacency list representation: component_id.pin -> list of component_id.pin
         self.adjacency_list: Dict[str, List[str]] = {}
         
     def build(self) -> Dict[str, List[str]]:
@@ -36,14 +35,7 @@ class GraphBuilder:
         return self.adjacency_list
         
     def print_connections(self):
-        """Prints the graph connections in a readable format."""
+        """Prints the graph connections in a JSON-like dictionary format."""
+        import json
         logger.info("Circuit Connections:")
-        visited_edges: Set[Tuple[str, str]] = set()
-        
-        for node, neighbors in self.adjacency_list.items():
-            for neighbor in neighbors:
-                # Create a canonical edge representation to avoid printing A <-> B and B <-> A
-                edge = tuple(sorted([node, neighbor]))
-                if edge not in visited_edges:
-                    visited_edges.add(edge)
-                    print(f"{node} <-> {neighbor}")
+        print(f"graph = {json.dumps(self.adjacency_list, indent=4)}")
