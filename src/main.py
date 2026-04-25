@@ -17,7 +17,8 @@ from src.validation.rules import (
     ShortCircuitSourceRule,
     OutputCollisionRule,
     UnpoweredCircuitRule,
-    ZeroResistanceRule
+    ZeroResistanceRule,
+    VoltageSourceLoopRule
 )
 
 # Configure logging
@@ -66,6 +67,7 @@ def main():
     validator.add_rule(OutputCollisionRule())
     validator.add_rule(UnpoweredCircuitRule())
     validator.add_rule(ZeroResistanceRule())
+    validator.add_rule(VoltageSourceLoopRule())
     
     issues = validator.validate()
     

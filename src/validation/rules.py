@@ -221,3 +221,28 @@ class ZeroResistanceRule(ValidationRule):
                         severity="error"
                     ))
         return issues
+
+from src.graph.algorithms import find_source_cycles
+
+class VoltageSourceLoopRule(ValidationRule):
+    @property
+    def name(self) -> str:
+        return "Voltage Source Loop Check"
+        
+    def validate(self, circuit: Circuit) -> List[ValidationIssue]:
+        issues = []
+        cycles = find_source_cycles(circuit)
+        
+        for cycle in cycles:
+            issues.append(ValidationIssue(
+                error_code="E304",
+                rule_name=self.name,
+                technical_message=f"KVL Violation: Ideal power sources {cycle} form a closed loop.",
+                user_explanation=f"You have wired multiple power sources ({', '.join(cycle)}) in a closed loop without any resistors between them. They will fight each other, creating infinite current and crashing the simulator.",
+                suggested_fix={
+                    "action": "break_loop",
+                    "description": "Add a resistor to the loop, or remove one of the power sources."
+                },
+                severity="error"
+            ))
+        return issues

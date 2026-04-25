@@ -5,7 +5,8 @@ from src.models.net import Net, PinConnection
 from src.validation.rules import (
     FloatingPinRule, EmptyNetRule, MissingGroundRule, 
     ShortCircuitSourceRule, OutputCollisionRule, 
-    UnpoweredCircuitRule, ZeroResistanceRule
+    UnpoweredCircuitRule, ZeroResistanceRule,
+    VoltageSourceLoopRule
 )
 
 class TestValidationRules(unittest.TestCase):
@@ -154,6 +155,36 @@ class TestValidationRules(unittest.TestCase):
         # Test completely missing property
         comps2 = {"R1": self._build_comp("R1", "resistor", {})}
         self.assertEqual(len(ZeroResistanceRule().validate(self._build_circuit(comps2, {}))), 1)
+
+    def test_voltage_source_loop_rule_pass(self):
+        # Two sources separated by a resistor (no loop of JUST sources)
+        comps = {
+            "V1": self._build_comp("V1", "dc_voltage_source", {}),
+            "V2": self._build_comp("V2", "dc_voltage_source", {}),
+            "R1": self._build_comp("R1", "resistor", {})
+        }
+        nets = {
+            "n1": self._build_net("n1", [PinConnection("V1", "positive"), PinConnection("R1", "p1")]),
+            "n2": self._build_net("n2", [PinConnection("R1", "p2"), PinConnection("V2", "positive")]),
+            "n3": self._build_net("n3", [PinConnection("V2", "negative"), PinConnection("V1", "negative")])
+        }
+        circuit = self._build_circuit(comps, nets)
+        self.assertEqual(len(VoltageSourceLoopRule().validate(circuit)), 0)
+
+    def test_voltage_source_loop_rule_fail(self):
+        # Two sources in parallel forming a direct loop without resistors
+        comps = {
+            "V1": self._build_comp("V1", "dc_voltage_source", {}),
+            "V2": self._build_comp("V2", "dc_voltage_source", {})
+        }
+        nets = {
+            "n1": self._build_net("n1", [PinConnection("V1", "positive"), PinConnection("V2", "positive")]),
+            "n2": self._build_net("n2", [PinConnection("V1", "negative"), PinConnection("V2", "negative")])
+        }
+        circuit = self._build_circuit(comps, nets)
+        issues = VoltageSourceLoopRule().validate(circuit)
+        self.assertEqual(len(issues), 1)
+        self.assertIn("KVL Violation", issues[0].technical_message)
 
 if __name__ == '__main__':
     unittest.main()
