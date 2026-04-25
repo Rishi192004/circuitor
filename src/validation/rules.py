@@ -63,6 +63,7 @@ class EmptyNetRule(ValidationRule):
                         "action": "delete_or_connect",
                         "description": "Either delete this floating wire, or attach its other end to a component pin."
                     },
+                    net_id=net_id,
                     severity="warning"
                 ))
         return issues
@@ -124,6 +125,7 @@ class ShortCircuitSourceRule(ValidationRule):
                                 "description": "Remove the wire connecting the two ends of the source, or add a resistor in between to limit the current."
                             },
                             component_id=comp_id,
+                            net_id=net_id,
                             severity="error"
                         ))
         return issues
@@ -157,6 +159,7 @@ class OutputCollisionRule(ValidationRule):
                         "action": "separate_outputs",
                         "description": "Never connect two outputs together directly. Connect outputs only to inputs, or use a multiplexer/logic gate if you need to combine their signals."
                     },
+                    net_id=net_id,
                     severity="error"
                 ))
         return issues

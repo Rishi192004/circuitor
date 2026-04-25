@@ -7,6 +7,7 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.parser.json_parser import CircuitParser
+from src.parser.normalizer import ValueNormalizer
 from src.graph.builder import GraphBuilder
 from src.validation.validator import CircuitValidator
 from src.validation.rules import (
@@ -41,6 +42,9 @@ def main():
     except Exception as e:
         logger.error(f"Failed to load circuit: {e}")
         return
+
+    # 1.5 Normalize Properties
+    ValueNormalizer.normalize_circuit(circuit)
 
     # 2. Build Graph
     graph_builder = GraphBuilder(circuit)

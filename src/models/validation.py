@@ -10,6 +10,7 @@ class ValidationIssue:
     suggested_fix: Dict[str, str]
     component_id: Optional[str] = None
     pin_name: Optional[str] = None
+    net_id: Optional[str] = None
     severity: str = "error"  # "error" or "warning"
     
     def to_dict(self):
@@ -18,9 +19,10 @@ class ValidationIssue:
             "rule_name": self.rule_name,
             "severity": self.severity,
             "target": {
-                "type": "component" if self.component_id else "global",
+                "type": "net" if self.net_id else ("component" if self.component_id else "global"),
                 "component_id": self.component_id,
-                "pin_name": self.pin_name
+                "pin_name": self.pin_name,
+                "net_id": self.net_id
             },
             "technical_message": self.technical_message,
             "user_explanation": self.user_explanation,

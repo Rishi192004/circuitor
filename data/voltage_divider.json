@@ -42,19 +42,19 @@
     {
       "id": "V1",
       "type": "dc_voltage_source",
-      "properties": { "voltage": 12 },
+      "properties": { "voltage": "12V" },
       "metadata": { "label": "Main Battery" }
     },
     {
       "id": "R1",
       "type": "resistor",
-      "properties": { "resistance": 1000 },
+      "properties": { "resistance": "1k" },
       "metadata": { "label": "Top Resistor" }
     },
     {
       "id": "R2",
       "type": "resistor",
-      "properties": { "resistance": 2000 },
+      "properties": { "resistance": "2k ohm" },
       "metadata": { "label": "Bottom Resistor" }
     },
     {
