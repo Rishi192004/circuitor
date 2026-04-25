@@ -1,5 +1,7 @@
 import logging
+from typing import List
 from src.models.circuit import Circuit
+from src.models.validation import ValidationIssue
 from src.validation.rules import ValidationRule
 
 logger = logging.getLogger(__name__)
@@ -7,20 +9,21 @@ logger = logging.getLogger(__name__)
 class CircuitValidator:
     def __init__(self, circuit: Circuit):
         self.circuit = circuit
-        self.rules = []
+        self.rules: List[ValidationRule] = []
         
     def add_rule(self, rule: ValidationRule):
         self.rules.append(rule)
         
-    def validate(self) -> bool:
-        """Runs all validation rules against the circuit."""
+    def validate(self) -> List[ValidationIssue]:
+        """Runs all validation rules against the circuit and returns any issues found."""
         logger.info("Running circuit validation...")
-        is_valid = True
+        all_issues = []
         for rule in self.rules:
-            if not rule.validate(self.circuit):
-                logger.error(f"Validation failed for rule: {rule.name}")
-                is_valid = False
+            issues = rule.validate(self.circuit)
+            if issues:
+                logger.warning(f"Rule '{rule.name}' found {len(issues)} issues.")
+                all_issues.extend(issues)
         
-        if is_valid:
-            logger.info("Circuit validation passed.")
-        return is_valid
+        if not all_issues:
+            logger.info("Circuit validation passed. No issues found.")
+        return all_issues

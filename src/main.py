@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import json
 
 # Ensure src is in Python path for absolute imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -8,7 +9,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.parser.json_parser import CircuitParser
 from src.graph.builder import GraphBuilder
 from src.validation.validator import CircuitValidator
-from src.validation.rules import FloatingPinRule
+from src.validation.rules import (
+    FloatingPinRule,
+    EmptyNetRule,
+    MissingGroundRule,
+    ShortCircuitSourceRule,
+    OutputCollisionRule
+)
 
 # Configure logging
 logging.basicConfig(
@@ -44,10 +51,25 @@ def main():
     graph_builder.print_connections()
     print("---------------------------\n")
     
-    # 4. Validation (Optional Step)
+    # 4. Validation
     validator = CircuitValidator(circuit)
     validator.add_rule(FloatingPinRule())
-    validator.validate()
+    validator.add_rule(EmptyNetRule())
+    validator.add_rule(MissingGroundRule())
+    validator.add_rule(ShortCircuitSourceRule())
+    validator.add_rule(OutputCollisionRule())
+    
+    issues = validator.validate()
+    
+    print("\n--- Validation Report ---")
+    if not issues:
+        print("Success: No issues found! The circuit is ready for simulation.")
+    else:
+        print(f"Found {len(issues)} issue(s):\n")
+        # Print out the issues as a JSON array for the frontend
+        issues_dict_list = [issue.to_dict() for issue in issues]
+        print(json.dumps(issues_dict_list, indent=2))
+    print("-------------------------\n")
 
 if __name__ == "__main__":
     main()
