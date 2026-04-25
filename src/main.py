@@ -15,7 +15,9 @@ from src.validation.rules import (
     EmptyNetRule,
     MissingGroundRule,
     ShortCircuitSourceRule,
-    OutputCollisionRule
+    OutputCollisionRule,
+    UnpoweredCircuitRule,
+    ZeroResistanceRule
 )
 
 # Configure logging
@@ -62,6 +64,8 @@ def main():
     validator.add_rule(MissingGroundRule())
     validator.add_rule(ShortCircuitSourceRule())
     validator.add_rule(OutputCollisionRule())
+    validator.add_rule(UnpoweredCircuitRule())
+    validator.add_rule(ZeroResistanceRule())
     
     issues = validator.validate()
     

@@ -163,3 +163,61 @@ class OutputCollisionRule(ValidationRule):
                     severity="error"
                 ))
         return issues
+
+class UnpoweredCircuitRule(ValidationRule):
+    @property
+    def name(self) -> str:
+        return "Unpowered Circuit Check"
+        
+    def validate(self, circuit: Circuit) -> List[ValidationIssue]:
+        has_source = False
+        for comp in circuit.components.values():
+            template = circuit.component_templates.get(comp.type)
+            if template and template.category == "source":
+                has_source = True
+                break
+                
+        if not has_source:
+            return [ValidationIssue(
+                error_code="E202",
+                rule_name=self.name,
+                technical_message="Circuit lacks an active power source.",
+                user_explanation="Your circuit does not have a power source (like a battery or voltage supply). Without power, the circuit will do nothing and all voltages will be zero.",
+                suggested_fix={
+                    "action": "add_source",
+                    "description": "Open the component library and add a Voltage Source or Current Source to your circuit."
+                },
+                severity="warning"
+            )]
+        return []
+
+class ZeroResistanceRule(ValidationRule):
+    @property
+    def name(self) -> str:
+        return "Zero Resistance Check"
+        
+    def validate(self, circuit: Circuit) -> List[ValidationIssue]:
+        issues = []
+        for comp_id, comp in circuit.components.items():
+            if comp.type == "resistor":
+                # Get resistance, default to 0 if missing to trigger the error
+                resistance = comp.properties.get("resistance", 0)
+                try:
+                    res_val = float(resistance)
+                except (ValueError, TypeError):
+                    res_val = 0
+                    
+                if res_val <= 0:
+                    issues.append(ValidationIssue(
+                        error_code="E303",
+                        rule_name=self.name,
+                        technical_message=f"Resistor '{comp_id}' has zero or invalid resistance ({resistance}).",
+                        user_explanation=f"The resistor '{comp_id}' has its resistance set to zero (or an invalid value). A zero-ohm resistor is just a wire and can cause math errors in simulation.",
+                        suggested_fix={
+                            "action": "edit_property",
+                            "description": f"Click on '{comp_id}' and change its 'resistance' property to a positive number (like '1k' or '330')."
+                        },
+                        component_id=comp_id,
+                        severity="error"
+                    ))
+        return issues
