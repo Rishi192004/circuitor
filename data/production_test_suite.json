@@ -1,0 +1,227 @@
+{
+  "circuit_id": "PROD_AUDIO_AMP_REV_B",
+  "component_templates": [
+    {
+      "id": "resistor",
+      "name": "Resistor",
+      "category": "passive",
+      "pins_template": [
+        { "name": "p1", "type": "passive" },
+        { "name": "p2", "type": "passive" }
+      ],
+      "default_pins": 2,
+      "property_schema": { "resistance": { "type": "number", "unit": "ohm" } }
+    },
+    {
+      "id": "capacitor",
+      "name": "Capacitor",
+      "category": "passive",
+      "pins_template": [
+        { "name": "pos", "type": "passive" },
+        { "name": "neg", "type": "passive" }
+      ],
+      "default_pins": 2,
+      "property_schema": { "capacitance": { "type": "number", "unit": "farad" } }
+    },
+    {
+      "id": "bjt_transistor",
+      "name": "NPN Transistor",
+      "category": "active",
+      "pins_template": [
+        { "name": "collector", "type": "passive" },
+        { "name": "base", "type": "input" },
+        { "name": "emitter", "type": "passive" }
+      ],
+      "default_pins": 3,
+      "property_schema": { "beta": { "type": "number" } }
+    },
+    {
+      "id": "dc_voltage_source",
+      "name": "DC Battery",
+      "category": "source",
+      "pins_template": [
+        { "name": "positive", "type": "output" },
+        { "name": "negative", "type": "output" }
+      ],
+      "default_pins": 2,
+      "property_schema": { "voltage": { "type": "number", "unit": "volt" } }
+    },
+    {
+      "id": "logic_gate",
+      "name": "Buffer Gate",
+      "category": "ic",
+      "pins_template": [
+        { "name": "in", "type": "input" },
+        { "name": "out", "type": "output" }
+      ],
+      "default_pins": 2,
+      "property_schema": {}
+    }
+  ],
+  "components": [
+    {
+      "id": "V_MAIN",
+      "type": "dc_voltage_source",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "voltage": "12V" },
+      "metadata": { "label": "Main Power", "part_number": "BATT-12V-LeadAcid" }
+    },
+    {
+      "id": "V_BACKUP",
+      "type": "dc_voltage_source",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "voltage": "9V" },
+      "metadata": { "label": "Backup Power", "part_number": "BATT-9V-Alkaline" }
+    },
+    {
+      "id": "V_LOGIC",
+      "type": "dc_voltage_source",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "voltage": "5V" },
+      "metadata": { "label": "5V LDO output simulated", "part_number": "LM7805-Sim" }
+    },
+    {
+      "id": "R_BIAS1",
+      "type": "resistor",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "resistance": "47k ohm" },
+      "metadata": { "label": "Bias High" }
+    },
+    {
+      "id": "R_BIAS2",
+      "type": "resistor",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "resistance": "10k ohm" },
+      "metadata": { "label": "Bias Low" }
+    },
+    {
+      "id": "R_LOAD",
+      "type": "resistor",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "resistance": "8 ohm" },
+      "metadata": { "label": "Speaker Load" }
+    },
+    {
+      "id": "R_LED_LIMIT",
+      "type": "resistor",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "resistance": "0 ohm" },
+      "metadata": { "label": "LED Limiter - ACCIDENTALLY 0" }
+    },
+    {
+      "id": "C_IN",
+      "type": "capacitor",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "capacitance": "10uF" },
+      "metadata": { "label": "DC Blocking Cap" }
+    },
+    {
+      "id": "C_BYPASS",
+      "type": "capacitor",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "capacitance": "100nF" },
+      "metadata": { "label": "Noise Bypass" }
+    },
+    {
+      "id": "Q_AMP",
+      "type": "bjt_transistor",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": { "beta": 150 },
+      "metadata": { "label": "2N3904 Audio Amp" }
+    },
+    {
+      "id": "U_CTRL_1",
+      "type": "logic_gate",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": {},
+      "metadata": { "label": "Enable Buffer A" }
+    },
+    {
+      "id": "U_CTRL_2",
+      "type": "logic_gate",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "properties": {},
+      "metadata": { "label": "Enable Buffer B" }
+    }
+  ],
+  "nets": [
+    {
+      "id": "net_12v_rail",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "wire_type": "power",
+      "endpoints": [
+        { "component_id": "V_MAIN", "pin_name": "positive" },
+        { "component_id": "V_BACKUP", "pin_name": "positive" },
+        { "component_id": "R_BIAS1", "pin_name": "p1" },
+        { "component_id": "R_LOAD", "pin_name": "p1" }
+      ],
+      "properties": { "thickness": "1.0mm" }
+    },
+    {
+      "id": "net_gnd_rail",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "wire_type": "power",
+      "endpoints": [
+        { "component_id": "V_MAIN", "pin_name": "negative" },
+        { "component_id": "V_BACKUP", "pin_name": "negative" },
+        { "component_id": "R_BIAS2", "pin_name": "p2" },
+        { "component_id": "Q_AMP", "pin_name": "emitter" },
+        { "component_id": "C_BYPASS", "pin_name": "neg" }
+      ],
+      "properties": { "thickness": "1.0mm" }
+    },
+    {
+      "id": "net_bias_point",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "wire_type": "signal",
+      "endpoints": [
+        { "component_id": "R_BIAS1", "pin_name": "p2" },
+        { "component_id": "R_BIAS2", "pin_name": "p1" },
+        { "component_id": "Q_AMP", "pin_name": "base" },
+        { "component_id": "C_IN", "pin_name": "pos" }
+      ],
+      "properties": {}
+    },
+    {
+      "id": "net_amp_output",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "wire_type": "signal",
+      "endpoints": [
+        { "component_id": "Q_AMP", "pin_name": "collector" },
+        { "component_id": "R_LOAD", "pin_name": "p2" }
+      ],
+      "properties": {}
+    },
+    {
+      "id": "net_logic_5v_short",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "wire_type": "power",
+      "endpoints": [
+        { "component_id": "V_LOGIC", "pin_name": "positive" },
+        { "component_id": "V_LOGIC", "pin_name": "negative" },
+        { "component_id": "U_CTRL_1", "pin_name": "in" },
+        { "component_id": "U_CTRL_2", "pin_name": "in" }
+      ],
+      "properties": { "note": "ACCIDENTAL SHORT ACROSS 5V RAIL" }
+    },
+    {
+      "id": "net_logic_collision",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "wire_type": "signal",
+      "endpoints": [
+        { "component_id": "U_CTRL_1", "pin_name": "out" },
+        { "component_id": "U_CTRL_2", "pin_name": "out" }
+      ],
+      "properties": { "note": "TWO OUTPUTS WIRED TOGETHER" }
+    },
+    {
+      "id": "net_dangling_trace",
+      "circuit_id": "PROD_AUDIO_AMP_REV_B",
+      "wire_type": "signal",
+      "endpoints": [
+        { "component_id": "C_IN", "pin_name": "neg" }
+      ],
+      "properties": { "note": "TRACE LEAD TO NOWHERE" }
+    }
+  ]
+}
