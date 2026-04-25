@@ -19,11 +19,12 @@ The project follows **Clean Architecture** principles using Python 3.11+ standar
 ### A. The Parsing & Normalization Pipeline
 The engine safely reads the frontend JSON, separates "Templates" (library definitions) from "Instances" (drawn components), and passes them through a **Value Normalizer**. This normalizer uses Regex to convert human-readable SI units (like `"5uF"` or `"10k ohm"`) into pure floats (`0.000005`, `10000.0`) to prevent the math engine from crashing.
 
-### B. The Graph Builder
-The engine iterates over every Net and treats it as a "clique", automatically mapping out every single pin to every other pin it touches. It generates a pure JSON-friendly Adjacency List ready for KVL/KCL algorithms.
+### B. The Graph Engine & Cycle Detection
+The engine iterates over every Net and treats it as a "clique", automatically mapping out every single pin to every other pin it touches to generate a pure JSON-friendly Adjacency List. 
+Additionally, `src/graph/algorithms.py` contains a custom **Depth-First Search (DFS) Cycle Detection** algorithm that projects the circuit into a Bipartite Graph to identify advanced parallel loops and global topology errors.
 
 ### C. The Educational Validation Pipeline
-Instead of relying on AI to guess if a circuit is broken, the Python engine runs 7 strict EE rules instantly:
+Instead of relying on AI to guess if a circuit is broken, the Python engine runs 8 strict EE rules instantly:
 1.  **FloatingPinRule**: Ensures no physical pin is left unwired.
 2.  **EmptyNetRule**: Ensures every drawn wire connects at least two endpoints.
 3.  **MissingGroundRule**: Verifies the circuit has a 0V `reference` component.
@@ -31,6 +32,7 @@ Instead of relying on AI to guess if a circuit is broken, the Python engine runs
 5.  **OutputCollisionRule**: Prevents two `output` pins from being wired directly together.
 6.  **UnpoweredCircuitRule**: Ensures the circuit actually has an active power source.
 7.  **ZeroResistanceRule**: Catches 0-ohm resistors that would cause divide-by-zero math errors.
+8.  **VoltageSourceLoopRule**: Uses the DFS Cycle Detection to catch fatal KVL violations (e.g. ideal batteries wired in a closed parallel loop).
 
 ### D. Frontend-Ready Feedback Engine
 When the validator catches an issue, it generates an exact, structured JSON array intended for the frontend UI:
@@ -47,4 +49,4 @@ When the validator catches an issue, it generates an exact, structured JSON arra
 This payload allows the frontend developer to instantly highlight the exact component/pin on the screen and render a helpful tooltip without talking to the backend again.
 
 ### E. 100% Test Coverage
-The validation engine is backed by a fully mocked `unittest` suite containing 14 pass/fail test cases, guaranteeing production stability.
+The validation engine and graph algorithms are backed by a fully mocked `unittest` suite containing 20 pass/fail test cases, guaranteeing production stability.
