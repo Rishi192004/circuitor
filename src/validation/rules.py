@@ -2,12 +2,17 @@ from abc import ABC, abstractmethod
 from typing import List
 from src.models.circuit import Circuit
 from src.models.validation import ValidationIssue
+from src.constants.enums import ValidationPhase
 
 class ValidationRule(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
         pass
+        
+    @property
+    def phase(self) -> ValidationPhase:
+        return ValidationPhase.PHYSICS
 
     @abstractmethod
     def validate(self, circuit: Circuit) -> List[ValidationIssue]:
@@ -17,6 +22,10 @@ class FloatingPinRule(ValidationRule):
     @property
     def name(self) -> str:
         return "Floating Pin Check"
+        
+    @property
+    def phase(self) -> ValidationPhase:
+        return ValidationPhase.TOPOLOGY
         
     def validate(self, circuit: Circuit) -> List[ValidationIssue]:
         issues = []
@@ -49,6 +58,10 @@ class EmptyNetRule(ValidationRule):
     @property
     def name(self) -> str:
         return "Empty Net Check"
+        
+    @property
+    def phase(self) -> ValidationPhase:
+        return ValidationPhase.TOPOLOGY
         
     def validate(self, circuit: Circuit) -> List[ValidationIssue]:
         issues = []
@@ -195,6 +208,10 @@ class ZeroResistanceRule(ValidationRule):
     @property
     def name(self) -> str:
         return "Zero Resistance Check"
+        
+    @property
+    def phase(self) -> ValidationPhase:
+        return ValidationPhase.SEMANTICS
         
     def validate(self, circuit: Circuit) -> List[ValidationIssue]:
         issues = []

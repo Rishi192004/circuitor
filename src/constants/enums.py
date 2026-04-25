@@ -7,3 +7,8 @@ class ComponentType(Enum):
     TRANSISTOR = "transistor"
     VOLTAGE_SOURCE = "voltage_source"
     CURRENT_SOURCE = "current_source"
+
+class ValidationPhase(Enum):
+    TOPOLOGY = 1
+    PHYSICS = 2
+    SEMANTICS = 3
