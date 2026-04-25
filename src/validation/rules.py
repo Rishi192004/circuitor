@@ -20,21 +20,25 @@ class FloatingPinRule(ValidationRule):
         
     def validate(self, circuit: Circuit) -> List[ValidationIssue]:
         issues = []
-        # Find all connected pins across all nets
         connected_pins = set()
         for net in circuit.nets.values():
             for endpoint in net.endpoints:
                 connected_pins.add(f"{endpoint.component_id}.{endpoint.pin_name}")
                 
-        # Check every component's pins
         for comp_id, comp in circuit.components.items():
             template = circuit.component_templates.get(comp.type)
             if template:
                 for pin in template.pins_template:
                     if f"{comp_id}.{pin.name}" not in connected_pins:
                         issues.append(ValidationIssue(
+                            error_code="E101",
                             rule_name=self.name,
-                            message=f"Pin '{pin.name}' on component '{comp_id}' is floating (not connected to any net).",
+                            technical_message=f"Pin '{comp_id}.{pin.name}' is disconnected.",
+                            user_explanation=f"The '{pin.name}' pin on component '{comp_id}' is floating in the air. Electricity cannot flow through a broken path.",
+                            suggested_fix={
+                                "action": "wire_pin",
+                                "description": f"Draw a wire connecting the '{pin.name}' pin of '{comp_id}' to another component or to ground."
+                            },
                             component_id=comp_id,
                             pin_name=pin.name,
                             severity="error"
@@ -51,9 +55,15 @@ class EmptyNetRule(ValidationRule):
         for net_id, net in circuit.nets.items():
             if len(net.endpoints) < 2:
                 issues.append(ValidationIssue(
+                    error_code="E102",
                     rule_name=self.name,
-                    message=f"Net '{net_id}' has fewer than 2 connections. It does not go anywhere.",
-                    severity="error"
+                    technical_message=f"Net '{net_id}' has < 2 endpoints.",
+                    user_explanation=f"You have drawn a wire ('{net_id}') that doesn't connect two things together. A wire must have at least two ends attached to something to be useful.",
+                    suggested_fix={
+                        "action": "delete_or_connect",
+                        "description": "Either delete this floating wire, or attach its other end to a component pin."
+                    },
+                    severity="warning"
                 ))
         return issues
 
@@ -63,7 +73,6 @@ class MissingGroundRule(ValidationRule):
         return "Missing Ground Check"
         
     def validate(self, circuit: Circuit) -> List[ValidationIssue]:
-        # Check if any component's template has category "reference" or id "ground"
         has_ground = False
         for comp in circuit.components.values():
             template = circuit.component_templates.get(comp.type)
@@ -73,8 +82,14 @@ class MissingGroundRule(ValidationRule):
                 
         if not has_ground:
             return [ValidationIssue(
+                error_code="E201",
                 rule_name=self.name,
-                message="Circuit is missing a ground reference.",
+                technical_message="Circuit lacks a 0V reference node.",
+                user_explanation="Your circuit doesn't have a Ground! Physical simulators need to know where 'Zero Volts' is in order to calculate the math for the rest of the circuit.",
+                suggested_fix={
+                    "action": "add_ground",
+                    "description": "Open the component library, add a 'Ground' component, and connect it to the negative side of your main power source."
+                },
                 severity="error"
             )]
         return []
@@ -86,11 +101,9 @@ class ShortCircuitSourceRule(ValidationRule):
         
     def validate(self, circuit: Circuit) -> List[ValidationIssue]:
         issues = []
-        # Check all voltage sources
         for comp_id, comp in circuit.components.items():
             template = circuit.component_templates.get(comp.type)
             if template and template.category == "source":
-                # Find all nets this component is connected to
                 source_nets = {}
                 for net_id, net in circuit.nets.items():
                     for endpoint in net.endpoints:
@@ -99,12 +112,17 @@ class ShortCircuitSourceRule(ValidationRule):
                                 source_nets[net_id] = []
                             source_nets[net_id].append(endpoint.pin_name)
                 
-                # Check if multiple pins of this source are in the same net
                 for net_id, pins in source_nets.items():
                     if len(pins) > 1:
                         issues.append(ValidationIssue(
+                            error_code="E301",
                             rule_name=self.name,
-                            message=f"Voltage source '{comp_id}' is short-circuited on net '{net_id}'. Pins {pins} are connected together.",
+                            technical_message=f"Voltage source '{comp_id}' pins {pins} are shorted on net '{net_id}'.",
+                            user_explanation=f"DANGER: You have wired the positive and negative sides of '{comp_id}' directly together! This creates a short circuit with zero resistance, causing infinite current.",
+                            suggested_fix={
+                                "action": "break_short",
+                                "description": "Remove the wire connecting the two ends of the source, or add a resistor in between to limit the current."
+                            },
                             component_id=comp_id,
                             severity="error"
                         ))
@@ -124,7 +142,6 @@ class OutputCollisionRule(ValidationRule):
                 if comp:
                     template = circuit.component_templates.get(comp.type)
                     if template:
-                        # Find the pin template
                         for pt in template.pins_template:
                             if pt.name == endpoint.pin_name and pt.type == "output":
                                 output_pins.append(f"{endpoint.component_id}.{endpoint.pin_name}")
@@ -132,8 +149,14 @@ class OutputCollisionRule(ValidationRule):
             
             if len(output_pins) > 1:
                 issues.append(ValidationIssue(
+                    error_code="E302",
                     rule_name=self.name,
-                    message=f"Multiple output pins are connected directly together on net '{net_id}': {output_pins}. This can cause a collision.",
+                    technical_message=f"Output pins {output_pins} shorted together on net '{net_id}'.",
+                    user_explanation=f"You have wired multiple 'Output' pins ({', '.join(output_pins)}) directly to each other. If one tries to send High voltage and the other sends Low, they will fight and burn out.",
+                    suggested_fix={
+                        "action": "separate_outputs",
+                        "description": "Never connect two outputs together directly. Connect outputs only to inputs, or use a multiplexer/logic gate if you need to combine their signals."
+                    },
                     severity="error"
                 ))
         return issues
