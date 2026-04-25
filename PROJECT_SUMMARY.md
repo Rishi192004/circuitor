@@ -24,15 +24,15 @@ The engine iterates over every Net and treats it as a "clique", automatically ma
 Additionally, `src/graph/algorithms.py` contains a custom **Depth-First Search (DFS) Cycle Detection** algorithm that projects the circuit into a Bipartite Graph to identify advanced parallel loops and global topology errors.
 
 ### C. The Educational Validation Pipeline
-Instead of relying on AI to guess if a circuit is broken, the Python engine runs 8 strict EE rules instantly:
-1.  **FloatingPinRule**: Ensures no physical pin is left unwired.
-2.  **EmptyNetRule**: Ensures every drawn wire connects at least two endpoints.
-3.  **MissingGroundRule**: Verifies the circuit has a 0V `reference` component.
-4.  **ShortCircuitSourceRule**: Prevents wiring a voltage source's terminals directly together.
-5.  **OutputCollisionRule**: Prevents two `output` pins from being wired directly together.
-6.  **UnpoweredCircuitRule**: Ensures the circuit actually has an active power source.
-7.  **ZeroResistanceRule**: Catches 0-ohm resistors that would cause divide-by-zero math errors.
-8.  **VoltageSourceLoopRule**: Uses the DFS Cycle Detection to catch fatal KVL violations (e.g. ideal batteries wired in a closed parallel loop).
+Instead of relying on AI to guess if a circuit is broken, the Python engine runs 8 strict EE rules instantly. These rules are **Orchestrated into Phases** (Topology -> Physics -> Semantics). If a fatal error occurs in an early phase, the engine fast-fails to prevent cascading errors.
+1.  **FloatingPinRule** (TOPOLOGY): Ensures no physical pin is left unwired.
+2.  **EmptyNetRule** (TOPOLOGY): Ensures every drawn wire connects at least two endpoints.
+3.  **MissingGroundRule** (PHYSICS): Verifies the circuit has a 0V `reference` component.
+4.  **ShortCircuitSourceRule** (PHYSICS): Prevents wiring a voltage source's terminals directly together.
+5.  **OutputCollisionRule** (PHYSICS): Prevents two `output` pins from being wired directly together.
+6.  **UnpoweredCircuitRule** (PHYSICS): Ensures the circuit actually has an active power source.
+7.  **VoltageSourceLoopRule** (PHYSICS): Uses the DFS Cycle Detection to catch fatal KVL violations.
+8.  **ZeroResistanceRule** (SEMANTICS): Catches 0-ohm resistors that would cause divide-by-zero math errors.
 
 ### D. Frontend-Ready Feedback Engine
 When the validator catches an issue, it generates an exact, structured JSON array intended for the frontend UI:
