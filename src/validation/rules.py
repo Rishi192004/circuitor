@@ -46,7 +46,9 @@ class FloatingPinRule(ValidationRule):
                             user_explanation=f"The '{pin.name}' pin on component '{comp_id}' is floating in the air. Electricity cannot flow through a broken path.",
                             suggested_fix={
                                 "action": "wire_pin",
-                                "description": f"Draw a wire connecting the '{pin.name}' pin of '{comp_id}' to another component or to ground."
+                                "description": f"Draw a wire connecting the '{pin.name}' pin of '{comp_id}' to another component or to ground.",
+                                "target_component_id": comp_id,
+                                "target_pin_name": pin.name
                             },
                             component_id=comp_id,
                             pin_name=pin.name,
@@ -74,7 +76,8 @@ class EmptyNetRule(ValidationRule):
                     user_explanation=f"You have drawn a wire ('{net_id}') that doesn't connect two things together. A wire must have at least two ends attached to something to be useful.",
                     suggested_fix={
                         "action": "delete_or_connect",
-                        "description": "Either delete this floating wire, or attach its other end to a component pin."
+                        "description": "Either delete this floating wire, or attach its other end to a component pin.",
+                        "target_net_id": net_id
                     },
                     net_id=net_id,
                     severity="warning"
@@ -102,7 +105,8 @@ class MissingGroundRule(ValidationRule):
                 user_explanation="Your circuit doesn't have a Ground! Physical simulators need to know where 'Zero Volts' is in order to calculate the math for the rest of the circuit.",
                 suggested_fix={
                     "action": "add_ground",
-                    "description": "Open the component library, add a 'Ground' component, and connect it to the negative side of your main power source."
+                    "description": "Open the component library, add a 'Ground' component, and connect it to the negative side of your main power source.",
+                    "suggested_component_type": "ground"
                 },
                 severity="error"
             )]
@@ -135,7 +139,10 @@ class ShortCircuitSourceRule(ValidationRule):
                             user_explanation=f"DANGER: You have wired the positive and negative sides of '{comp_id}' directly together! This creates a short circuit with zero resistance, causing infinite current.",
                             suggested_fix={
                                 "action": "break_short",
-                                "description": "Remove the wire connecting the two ends of the source, or add a resistor in between to limit the current."
+                                "description": "Remove the wire connecting the two ends of the source, or add a resistor in between to limit the current.",
+                                "target_component_id": comp_id,
+                                "target_net_id": net_id,
+                                "suggested_component_type": "resistor"
                             },
                             component_id=comp_id,
                             net_id=net_id,
@@ -170,7 +177,8 @@ class OutputCollisionRule(ValidationRule):
                     user_explanation=f"You have wired multiple 'Output' pins ({', '.join(output_pins)}) directly to each other. If one tries to send High voltage and the other sends Low, they will fight and burn out.",
                     suggested_fix={
                         "action": "separate_outputs",
-                        "description": "Never connect two outputs together directly. Connect outputs only to inputs, or use a multiplexer/logic gate if you need to combine their signals."
+                        "description": "Never connect two outputs together directly. Connect outputs only to inputs, or use a multiplexer/logic gate if you need to combine their signals.",
+                        "target_net_id": net_id
                     },
                     net_id=net_id,
                     severity="error"
@@ -198,7 +206,8 @@ class UnpoweredCircuitRule(ValidationRule):
                 user_explanation="Your circuit does not have a power source (like a battery or voltage supply). Without power, the circuit will do nothing and all voltages will be zero.",
                 suggested_fix={
                     "action": "add_source",
-                    "description": "Open the component library and add a Voltage Source or Current Source to your circuit."
+                    "description": "Open the component library and add a Voltage Source or Current Source to your circuit.",
+                    "suggested_component_type": "voltage_source"
                 },
                 severity="warning"
             )]
@@ -232,7 +241,9 @@ class ZeroResistanceRule(ValidationRule):
                         user_explanation=f"The resistor '{comp_id}' has its resistance set to zero (or an invalid value). A zero-ohm resistor is just a wire and can cause math errors in simulation.",
                         suggested_fix={
                             "action": "edit_property",
-                            "description": f"Click on '{comp_id}' and change its 'resistance' property to a positive number (like '1k' or '330')."
+                            "description": f"Click on '{comp_id}' and change its 'resistance' property to a positive number (like '1k' or '330').",
+                            "target_component_id": comp_id,
+                            "property_name": "resistance"
                         },
                         component_id=comp_id,
                         severity="error"
@@ -258,7 +269,9 @@ class VoltageSourceLoopRule(ValidationRule):
                 user_explanation=f"You have wired multiple power sources ({', '.join(cycle)}) in a closed loop without any resistors between them. They will fight each other, creating infinite current and crashing the simulator.",
                 suggested_fix={
                     "action": "break_loop",
-                    "description": "Add a resistor to the loop, or remove one of the power sources."
+                    "description": "Add a resistor to the loop, or remove one of the power sources.",
+                    "target_component_ids": cycle,
+                    "suggested_component_type": "resistor"
                 },
                 component_ids=cycle,
                 severity="error"
