@@ -260,6 +260,7 @@ class VoltageSourceLoopRule(ValidationRule):
                     "action": "break_loop",
                     "description": "Add a resistor to the loop, or remove one of the power sources."
                 },
+                component_ids=cycle,
                 severity="error"
             ))
         return issues
