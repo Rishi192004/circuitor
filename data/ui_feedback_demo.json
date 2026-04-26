@@ -1,0 +1,52 @@
+{
+  "circuit_id": "UI_FEEDBACK_DEMO",
+  "component_templates": [
+    {
+      "id": "dc_voltage_source",
+      "name": "DC Battery",
+      "category": "source",
+      "pins_template": [
+        { "name": "positive", "type": "output" },
+        { "name": "negative", "type": "output" }
+      ],
+      "default_pins": 2,
+      "property_schema": { "voltage": { "type": "number", "unit": "volt" } }
+    }
+  ],
+  "components": [
+    {
+      "id": "V1",
+      "type": "dc_voltage_source",
+      "circuit_id": "UI_FEEDBACK_DEMO",
+      "properties": { "voltage": "5V" }
+    },
+    {
+      "id": "V2",
+      "type": "dc_voltage_source",
+      "circuit_id": "UI_FEEDBACK_DEMO",
+      "properties": { "voltage": "9V" }
+    }
+  ],
+  "nets": [
+    {
+      "id": "net_top",
+      "circuit_id": "UI_FEEDBACK_DEMO",
+      "wire_type": "power",
+      "endpoints": [
+        { "component_id": "V1", "pin_name": "positive" },
+        { "component_id": "V2", "pin_name": "positive" }
+      ],
+      "properties": {}
+    },
+    {
+      "id": "net_bottom",
+      "circuit_id": "UI_FEEDBACK_DEMO",
+      "wire_type": "power",
+      "endpoints": [
+        { "component_id": "V1", "pin_name": "negative" },
+        { "component_id": "V2", "pin_name": "negative" }
+      ],
+      "properties": {}
+    }
+  ]
+}

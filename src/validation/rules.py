@@ -3,6 +3,7 @@ from typing import List
 from src.models.circuit import Circuit
 from src.models.validation import ValidationIssue
 from src.constants.enums import ValidationPhase
+from src.graph.algorithms import find_source_cycles
 
 class ValidationRule(ABC):
     @property
@@ -250,7 +251,6 @@ class ZeroResistanceRule(ValidationRule):
                     ))
         return issues
 
-from src.graph.algorithms import find_source_cycles
 
 class VoltageSourceLoopRule(ValidationRule):
     @property

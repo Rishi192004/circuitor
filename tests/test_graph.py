@@ -1,9 +1,4 @@
 import unittest
-import sys
-import os
-
-# Ensure src is in Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.models.circuit import Circuit
 from src.models.component import Component, ComponentTemplate, PinTemplate
