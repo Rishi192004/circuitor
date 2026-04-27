@@ -1,0 +1,124 @@
+{
+  "circuit_id": "opamp-missing-power-001",
+  "component_templates": [
+    {
+      "id": "op_amp",
+      "name": "Operational Amplifier",
+      "category": "opamp",
+      "pins_template": [
+        {"name": "in+",  "type": "input"},
+        {"name": "in-",  "type": "input"},
+        {"name": "out",  "type": "output"},
+        {"name": "vcc",  "type": "power"},
+        {"name": "vee",  "type": "power"}
+      ],
+      "default_pins": 5,
+      "property_schema": {}
+    },
+    {
+      "id": "dc_voltage_source",
+      "name": "DC Voltage Source",
+      "category": "source",
+      "pins_template": [
+        {"name": "positive", "type": "output"},
+        {"name": "negative", "type": "output"}
+      ],
+      "default_pins": 2,
+      "property_schema": {}
+    },
+    {
+      "id": "resistor",
+      "name": "Resistor",
+      "category": "passive",
+      "pins_template": [
+        {"name": "p1", "type": "passive"},
+        {"name": "p2", "type": "passive"}
+      ],
+      "default_pins": 2,
+      "property_schema": {}
+    },
+    {
+      "id": "ground",
+      "name": "Ground",
+      "category": "reference",
+      "pins_template": [
+        {"name": "gnd", "type": "passive"}
+      ],
+      "default_pins": 1,
+      "property_schema": {}
+    }
+  ],
+  "components": [
+    {
+      "id": "V1",
+      "type": "dc_voltage_source",
+      "circuit_id": "opamp-missing-power-001",
+      "properties": {"voltage": "12"},
+      "metadata": {}
+    },
+    {
+      "id": "U1",
+      "type": "op_amp",
+      "circuit_id": "opamp-missing-power-001",
+      "properties": {},
+      "metadata": {}
+    },
+    {
+      "id": "R1",
+      "type": "resistor",
+      "circuit_id": "opamp-missing-power-001",
+      "properties": {"resistance": "10000"},
+      "metadata": {}
+    },
+    {
+      "id": "G1",
+      "type": "ground",
+      "circuit_id": "opamp-missing-power-001",
+      "properties": {},
+      "metadata": {}
+    }
+  ],
+  "nets": [
+    {
+      "id": "net_input",
+      "circuit_id": "opamp-missing-power-001",
+      "wire_type": "signal",
+      "endpoints": [
+        {"component_id": "V1",  "pin_name": "positive"},
+        {"component_id": "U1",  "pin_name": "in+"}
+      ],
+      "properties": {}
+    },
+    {
+      "id": "net_gnd",
+      "circuit_id": "opamp-missing-power-001",
+      "wire_type": "signal",
+      "endpoints": [
+        {"component_id": "V1",  "pin_name": "negative"},
+        {"component_id": "U1",  "pin_name": "in-"},
+        {"component_id": "G1",  "pin_name": "gnd"}
+      ],
+      "properties": {}
+    },
+    {
+      "id": "net_output",
+      "circuit_id": "opamp-missing-power-001",
+      "wire_type": "signal",
+      "endpoints": [
+        {"component_id": "U1",  "pin_name": "out"},
+        {"component_id": "R1",  "pin_name": "p1"}
+      ],
+      "properties": {}
+    },
+    {
+      "id": "net_load_gnd",
+      "circuit_id": "opamp-missing-power-001",
+      "wire_type": "signal",
+      "endpoints": [
+        {"component_id": "R1",  "pin_name": "p2"},
+        {"component_id": "G1",  "pin_name": "gnd"}
+      ],
+      "properties": {}
+    }
+  ]
+}

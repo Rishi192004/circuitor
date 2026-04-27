@@ -1,0 +1,83 @@
+{
+  "circuit_id": "led-direct-drive-001",
+  "component_templates": [
+    {
+      "id": "dc_voltage_source",
+      "name": "DC Voltage Source",
+      "category": "source",
+      "pins_template": [
+        {"name": "positive", "type": "output"},
+        {"name": "negative", "type": "output"}
+      ],
+      "default_pins": 2,
+      "property_schema": {}
+    },
+    {
+      "id": "led",
+      "name": "Light Emitting Diode",
+      "category": "led",
+      "pins_template": [
+        {"name": "anode", "type": "passive"},
+        {"name": "cathode", "type": "passive"}
+      ],
+      "default_pins": 2,
+      "property_schema": {}
+    },
+    {
+      "id": "ground",
+      "name": "Ground",
+      "category": "reference",
+      "pins_template": [
+        {"name": "gnd", "type": "passive"}
+      ],
+      "default_pins": 1,
+      "property_schema": {}
+    }
+  ],
+  "components": [
+    {
+      "id": "V1",
+      "type": "dc_voltage_source",
+      "circuit_id": "led-direct-drive-001",
+      "properties": {"voltage": "5"},
+      "metadata": {}
+    },
+    {
+      "id": "D1",
+      "type": "led",
+      "circuit_id": "led-direct-drive-001",
+      "properties": {"color": "red"},
+      "metadata": {}
+    },
+    {
+      "id": "G1",
+      "type": "ground",
+      "circuit_id": "led-direct-drive-001",
+      "properties": {},
+      "metadata": {}
+    }
+  ],
+  "nets": [
+    {
+      "id": "net_1",
+      "circuit_id": "led-direct-drive-001",
+      "wire_type": "signal",
+      "endpoints": [
+        {"component_id": "V1", "pin_name": "positive"},
+        {"component_id": "D1", "pin_name": "anode"}
+      ],
+      "properties": {}
+    },
+    {
+      "id": "net_2",
+      "circuit_id": "led-direct-drive-001",
+      "wire_type": "signal",
+      "endpoints": [
+        {"component_id": "D1", "pin_name": "cathode"},
+        {"component_id": "V1", "pin_name": "negative"},
+        {"component_id": "G1", "pin_name": "gnd"}
+      ],
+      "properties": {}
+    }
+  ]
+}

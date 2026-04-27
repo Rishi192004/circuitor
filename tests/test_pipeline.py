@@ -29,6 +29,7 @@ class TestPipelineResult(unittest.TestCase):
             metadata={"rules_run": 8}
         )
         d = result.to_dict()
+        # ── Existing fields (regression) ──────────────────────────────────────
         self.assertEqual(d["status"], "success")
         self.assertEqual(d["circuit_id"], "test_circuit")
         self.assertEqual(d["phase_reached"], "ALL_PASSED")
@@ -36,6 +37,52 @@ class TestPipelineResult(unittest.TestCase):
         self.assertIsInstance(d["issues"], list)
         self.assertIsInstance(d["graph"], dict)
         self.assertEqual(d["metadata"]["rules_run"], 8)
+        # ── New fields (Pattern Engine additions) ─────────────────────────────
+        self.assertIn("can_simulate", d)
+        self.assertIn("suggestions", d)
+        self.assertIn("suggestions_count", d)
+        self.assertIsInstance(d["suggestions"], list)
+        self.assertEqual(d["suggestions_count"], 0)
+
+    def test_can_simulate_true_when_no_errors(self):
+        """can_simulate must be True when no error-severity issues exist."""
+        result = PipelineResult(
+            status="success",
+            circuit_id="c1",
+            phase_reached="ALL_PASSED",
+            issues=[],
+        )
+        self.assertTrue(result.can_simulate)
+
+    def test_can_simulate_false_when_error_present(self):
+        """can_simulate must be False when at least one error issue exists."""
+        issue = ValidationIssue(
+            error_code="E101", rule_name="Floating Pin Check",
+            technical_message="Pin floating.", user_explanation="Floating.",
+            suggested_fix={}, component_id="R1", pin_name="p1", severity="error",
+        )
+        result = PipelineResult(
+            status="error",
+            circuit_id="c1",
+            phase_reached="TOPOLOGY",
+            issues=[issue],
+        )
+        self.assertFalse(result.can_simulate)
+
+    def test_can_simulate_true_when_only_warnings(self):
+        """Warnings alone must not block simulation."""
+        issue = ValidationIssue(
+            error_code="E102", rule_name="Empty Net Check",
+            technical_message="Empty net.", user_explanation="Empty.",
+            suggested_fix={}, net_id="n1", severity="warning",
+        )
+        result = PipelineResult(
+            status="warning",
+            circuit_id="c1",
+            phase_reached="ALL_PASSED",
+            issues=[issue],
+        )
+        self.assertTrue(result.can_simulate)
 
     def test_validation_issue_null_filtering(self):
         """Verify that to_dict() does NOT emit null target fields."""

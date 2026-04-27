@@ -19,6 +19,7 @@ from src.validation.rules import (
     VoltageSourceLoopRule
 )
 from src.models.pipeline import PipelineResult
+from src.patterns import PatternEngine, LEDPattern, OpAmpPattern, VoltageDividerPattern
 
 # Configure logging
 logging.basicConfig(
@@ -27,7 +28,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# All available rules, registered in phase order
+# All available validation rules, registered in phase order.
 ALL_RULES = [
     FloatingPinRule(),
     EmptyNetRule(),
@@ -37,6 +38,13 @@ ALL_RULES = [
     UnpoweredCircuitRule(),
     ZeroResistanceRule(),
     VoltageSourceLoopRule()
+]
+
+# All registered patterns for the Pattern Engine.
+ALL_PATTERNS = [
+    LEDPattern(),
+    OpAmpPattern(),
+    VoltageDividerPattern(),
 ]
 
 
@@ -74,7 +82,11 @@ def run_pipeline(filepath: str) -> PipelineResult:
     
     issues, phase_reached = validator.validate()
 
-    # 5. Determine overall status
+    # 5. Run Pattern Engine (non-blocking — never influences validity)
+    pattern_engine = PatternEngine(ALL_PATTERNS)
+    suggestions = pattern_engine.run(circuit, issues)
+
+    # 6. Determine overall status
     has_errors = any(i.severity == "error" for i in issues)
     has_warnings = any(i.severity == "warning" for i in issues)
     
@@ -90,11 +102,13 @@ def run_pipeline(filepath: str) -> PipelineResult:
         circuit_id=circuit.id,
         phase_reached=phase_reached,
         issues=issues,
+        suggestions=suggestions,
         graph=circuit.graph,
         metadata={
             "components_count": len(circuit.components),
             "nets_count": len(circuit.nets),
             "rules_run": len(ALL_RULES),
+            "patterns_run": len(ALL_PATTERNS),
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
     )
