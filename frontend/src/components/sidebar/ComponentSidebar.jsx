@@ -4,19 +4,32 @@ import ResistorSymbol from '../canvas/symbols/ResistorSymbol.jsx'
 import CapacitorSymbol from '../canvas/symbols/CapacitorSymbol.jsx'
 import VoltageSourceSymbol from '../canvas/symbols/VoltageSourceSymbol.jsx'
 import GroundSymbol from '../canvas/symbols/GroundSymbol.jsx'
+import OpAmpSymbol from '../canvas/symbols/OpAmpSymbol.jsx'
+import LEDSymbol from '../canvas/symbols/LEDSymbol.jsx'
 
 const SYMBOLS = {
   resistor: ResistorSymbol,
   capacitor: CapacitorSymbol,
   dc_voltage_source: VoltageSourceSymbol,
   ground: GroundSymbol,
+  op_amp: OpAmpSymbol,
+  led: LEDSymbol,
 }
 
 function SidebarPreview({ type }) {
   const Symbol = SYMBOLS[type]
+  const lib = COMPONENT_LIBRARY[type]
   if (!Symbol) return null
+
+  const halfW = (lib?.svgWidth ?? 64) / 2
+  const halfH = (lib?.svgHeight ?? 40) / 2
+
   return (
-    <svg className="sidebar__symbol" viewBox="-32 -20 64 40" preserveAspectRatio="xMidYMid meet">
+    <svg
+      className="sidebar__symbol"
+      viewBox={`${-halfW} ${-halfH} ${halfW * 2} ${halfH * 2}`}
+      preserveAspectRatio="xMidYMid meet"
+    >
       <Symbol />
     </svg>
   )

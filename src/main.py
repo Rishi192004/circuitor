@@ -16,7 +16,8 @@ from src.validation.rules import (
     OutputCollisionRule,
     UnpoweredCircuitRule,
     ZeroResistanceRule,
-    VoltageSourceLoopRule
+    VoltageSourceLoopRule,
+    OpAmpPowerRule
 )
 from src.models.pipeline import PipelineResult
 from src.patterns import PatternEngine, LEDPattern, OpAmpPattern, VoltageDividerPattern
@@ -37,7 +38,8 @@ ALL_RULES = [
     OutputCollisionRule(),
     UnpoweredCircuitRule(),
     ZeroResistanceRule(),
-    VoltageSourceLoopRule()
+    VoltageSourceLoopRule(),
+    OpAmpPowerRule()
 ]
 
 # All registered patterns for the Pattern Engine.

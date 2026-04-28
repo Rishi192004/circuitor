@@ -11,7 +11,7 @@ export const COMPONENT_LIBRARY = {
     svgHeight: 24,
     pins: {
       p1: { x: -32, y: 0 },
-      p2: { x:  32, y: 0 },
+      p2: { x: 32, y: 0 },
     },
     defaultProps: { resistance: '1k' },
   },
@@ -23,7 +23,7 @@ export const COMPONENT_LIBRARY = {
     svgHeight: 28,
     pins: {
       p1: { x: -32, y: 0 },
-      p2: { x:  32, y: 0 },
+      p2: { x: 32, y: 0 },
     },
     defaultProps: { capacitance: '100n' },
   },
@@ -35,7 +35,11 @@ export const COMPONENT_LIBRARY = {
     svgHeight: 80,
     pins: {
       positive: { x: 0, y: -40 },
-      negative: { x: 0, y:  40 },
+      negative: { x: 0, y: 40 },
+    },
+    pinRoles: {
+      positive: 'output',
+      negative: 'passive',
     },
     defaultProps: { voltage: '5V' },
   },
@@ -49,6 +53,46 @@ export const COMPONENT_LIBRARY = {
       gnd: { x: 0, y: -16 },
     },
     defaultProps: {},
+  },
+  op_amp: {
+    label: 'Op Amp',
+    symbol: 'U',
+    category: 'active',
+    svgWidth: 80,
+    svgHeight: 80,
+    pins: {
+      non_inverting: { x: -40, y: -20 }, // +
+      inverting: { x: -40, y: 20 }, // -
+      output: { x: 40, y: 0 }, // out
+      vcc: { x: 0, y: -40 }, // +V supply
+      vee: { x: 0, y: 40 }, // -V supply (or GND)
+    },
+    pinRoles: {
+      non_inverting: 'input',
+      inverting: 'input',
+      output: 'output',
+      vcc: 'power',
+      vee: 'power',
+    },
+    defaultProps: {
+      gain: '1e5', // ideal high gain
+    },
+  },
+  led: {
+    label: 'LED',
+    symbol: 'D',
+    category: 'active',
+    svgWidth: 64,
+    svgHeight: 40,
+    pins: {
+      anode:   { x: -32, y: 0 },
+      cathode: { x:  32, y: 0 },
+    },
+    pinRoles: {
+      anode:   'passive',
+      cathode: 'passive',
+    },
+    defaultProps: { color: 'red', forward_voltage: '2V' },
   },
 }
 
@@ -78,6 +122,16 @@ export const TEMPLATES = [
     pins: ['gnd'],
     properties: {},
   },
+  {
+    type: 'op_amp',
+    pins: ['non_inverting', 'inverting', 'output', 'vcc', 'vee'],
+    properties: { gain: '1e5' },
+  },
+  {
+    type: 'led',
+    pins: ['anode', 'cathode'],
+    properties: { color: 'red', forward_voltage: '2V' },
+  },
 ]
 
 /**
@@ -87,8 +141,15 @@ export const TEMPLATES = [
 export function getPinTemplate(type) {
   const lib = COMPONENT_LIBRARY[type]
   if (!lib) return []
-  const pinType = lib.category === 'source' ? 'output' : 'passive'
-  return Object.keys(lib.pins).map(name => ({ name, type: pinType }))
+  return Object.keys(lib.pins).map(name => {
+    // Priority 1: Explicitly defined pin role
+    if (lib.pinRoles && lib.pinRoles[name]) {
+      return { name, type: lib.pinRoles[name] }
+    }
+    // Priority 2: Legacy fallback based on category
+    const pinType = lib.category === 'source' ? 'output' : 'passive'
+    return { name, type: pinType }
+  })
 }
 
 /**

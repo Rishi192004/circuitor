@@ -6,12 +6,18 @@ import ResistorSymbol from './symbols/ResistorSymbol.jsx'
 import CapacitorSymbol from './symbols/CapacitorSymbol.jsx'
 import VoltageSourceSymbol from './symbols/VoltageSourceSymbol.jsx'
 import GroundSymbol from './symbols/GroundSymbol.jsx'
+import OpAmpSymbol from './symbols/OpAmpSymbol.jsx'
+import LEDSymbol from './symbols/LEDSymbol.jsx'
+
+
 
 const SYMBOLS = {
   resistor: ResistorSymbol,
   capacitor: CapacitorSymbol,
   dc_voltage_source: VoltageSourceSymbol,
   ground: GroundSymbol,
+  op_amp: OpAmpSymbol,
+  led: LEDSymbol,
 }
 
 const LABEL_OFFSET = {
@@ -19,6 +25,8 @@ const LABEL_OFFSET = {
   capacitor:         { ref: { x: 0, y: -18 }, val: { x: 0, y: -9  } },
   dc_voltage_source: { ref: { x: 26, y: -8 }, val: { x: 26, y: 4  } },
   ground:            { ref: { x: 0, y: 28  }, val: { x: 0, y: 38  } },
+  op_amp:            { ref: { x: 0, y: -42 }, val: { x: 0, y: 48  } },
+  led:               { ref: { x: 0, y: -20 }, val: { x: 0, y: -10 } },
 }
 
 /**

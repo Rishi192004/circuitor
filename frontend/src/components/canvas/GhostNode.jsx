@@ -5,12 +5,16 @@ import ResistorSymbol from './symbols/ResistorSymbol.jsx'
 import CapacitorSymbol from './symbols/CapacitorSymbol.jsx'
 import VoltageSourceSymbol from './symbols/VoltageSourceSymbol.jsx'
 import GroundSymbol from './symbols/GroundSymbol.jsx'
+import OpAmpSymbol from './symbols/OpAmpSymbol.jsx'
+import LEDSymbol from './symbols/LEDSymbol.jsx'
 
 const SYMBOLS = {
   resistor: ResistorSymbol,
   capacitor: CapacitorSymbol,
   dc_voltage_source: VoltageSourceSymbol,
   ground: GroundSymbol,
+  op_amp: OpAmpSymbol,
+  led: LEDSymbol,
 }
 
 export default function GhostNode({ suggestion }) {

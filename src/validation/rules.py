@@ -277,3 +277,42 @@ class VoltageSourceLoopRule(ValidationRule):
                 severity="error"
             ))
         return issues
+        
+class OpAmpPowerRule(ValidationRule):
+    @property
+    def name(self) -> str:
+        return "Op-Amp Power Check"
+        
+    def validate(self, circuit: Circuit) -> List[ValidationIssue]:
+        issues = []
+        # Common supply names matching opamp_pattern.py
+        POS_SUPPLY = {"vcc", "vdd", "v+", "vs+", "vsupply", "vpos"}
+        NEG_SUPPLY = {"vee", "vss", "v-", "vs-", "vneg", "gnd", "ground"}
+        
+        # Helper to check connection
+        connected_pins = set()
+        for net in circuit.nets.values():
+            for ep in net.endpoints:
+                connected_pins.add(f"{ep.component_id}.{ep.pin_name}")
+
+        for comp_id, comp in circuit.components.items():
+            template = circuit.component_templates.get(comp.type)
+            if template and comp.type == "op_amp":
+                has_pos = any(p.name.lower() in POS_SUPPLY and f"{comp_id}.{p.name}" in connected_pins for p in template.pins_template)
+                has_neg = any(p.name.lower() in NEG_SUPPLY and f"{comp_id}.{p.name}" in connected_pins for p in template.pins_template)
+                
+                if not has_pos or not has_neg:
+                    issues.append(ValidationIssue(
+                        error_code="E401",
+                        rule_name=self.name,
+                        technical_message=f"Op-amp '{comp_id}' missing power rails.",
+                        user_explanation=f"Your Op-Amp '{comp_id}' is not powered! It needs both a positive supply (VCC) and a negative supply/GND (VEE) to work.",
+                        suggested_fix={
+                            "action": "add_ground" if has_pos else "add_source",
+                            "description": "Connect VCC and VEE pins to a power source and ground."
+                        },
+                        component_id=comp_id,
+                        severity="error"
+                    ))
+        return issues
+

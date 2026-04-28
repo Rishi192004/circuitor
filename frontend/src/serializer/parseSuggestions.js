@@ -4,7 +4,9 @@ const PIN_OFFSETS = {
   resistor:       { p1: { x: -40, y: 0 }, p2: { x: 40, y: 0 } },
   capacitor:      { p1: { x: -40, y: 0 }, p2: { x: 40, y: 0 } },
   dc_voltage_source: { positive: { x: 0, y: -40 }, negative: { x: 0, y: 40 } },
-  ground:         { gnd: { x: 0, y: 0 } }
+  ground:         { gnd: { x: 0, y: 0 } },
+  op_amp:         { non_inverting: { x: -40, y: -20 }, inverting: { x: -40, y: 20 }, output: { x: 40, y: 0 }, vcc: { x: 0, y: -40 }, vee: { x: 0, y: 40 } },
+  led:            { anode: { x: -32, y: 0 }, cathode: { x: 32, y: 0 } }
 }
 
 const ACTION_MAP = {
