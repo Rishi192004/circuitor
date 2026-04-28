@@ -4,6 +4,7 @@ import ComponentNode from './ComponentNode.jsx'
 import WireLayer from './WireLayer.jsx'
 import WireInProgress from './WireInProgress.jsx'
 import GhostNode from './GhostNode.jsx'
+import ComponentPropertiesEditor from '../properties/ComponentPropertiesEditor.jsx'
 
 const GRID = 20
 
@@ -14,8 +15,10 @@ export default function CircuitCanvas() {
   const {
     instances, addInstance,
     wireInProgress, cancelWire, clearSelection,
-    suggestions, acceptSuggestion, cycleFocus
+    suggestions, acceptSuggestion, cycleFocus,
+    propertyEditor, closePropertyEditor, updateInstanceProperty
   } = useCircuitStore()
+  const popupInstance = instances.find(i => i.id === propertyEditor?.instanceId) ?? null
 
   // ── Convert DOM coords → SVG canvas coords ─────────────────
   function toSVGPoint(clientX, clientY) {
@@ -77,6 +80,14 @@ export default function CircuitCanvas() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [suggestions, acceptSuggestion, cycleFocus])
+
+  useEffect(() => {
+    const onEscape = (e) => {
+      if (e.key === 'Escape') closePropertyEditor()
+    }
+    window.addEventListener('keydown', onEscape)
+    return () => window.removeEventListener('keydown', onEscape)
+  }, [closePropertyEditor])
 
   return (
     <div
@@ -149,6 +160,21 @@ export default function CircuitCanvas() {
           <div style={{ fontSize: 12, color: 'var(--text-muted)', opacity: 0.5 }}>
             Drag components from the sidebar to get started
           </div>
+        </div>
+      )}
+
+      {propertyEditor?.mode === 'popup' && popupInstance && (
+        <div
+          className="prop-edit-overlay"
+          style={{ left: propertyEditor.anchorX + 12, top: propertyEditor.anchorY + 12 }}
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <ComponentPropertiesEditor
+            instance={popupInstance}
+            compact
+            onClose={closePropertyEditor}
+            onChange={(key, value) => updateInstanceProperty(popupInstance.id, key, value)}
+          />
         </div>
       )}
     </div>

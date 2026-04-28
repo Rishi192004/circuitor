@@ -84,7 +84,7 @@ export default function Toolbar() {
 
       <div className="toolbar__divider" />
       <span className="toolbar__hint">
-        Drag components · Click pin to wire · Del to delete
+        Drag components · Click pin to wire · Double-click component to edit · Del to delete
       </span>
     </header>
   )

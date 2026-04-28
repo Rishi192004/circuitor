@@ -125,6 +125,7 @@ export const useCircuitStore = create((set, get) => ({
   selectedId: null,
   highlightedIds: [],            // [{ id, severity }] — drives canvas glow
   wireInProgress: null,          // { fromComponentId, fromPinName } | null
+  propertyEditor: null,          // { instanceId, anchorX, anchorY, mode } | null
 
   // ── Validation state ────────────────────────────────────────
   isValidating: false,
@@ -252,12 +253,14 @@ export const useCircuitStore = create((set, get) => ({
       ),
       selectedId: null,
       highlightedIds: state.highlightedIds.filter(h => h.id !== selectedId),
+      propertyEditor:
+        state.propertyEditor?.instanceId === selectedId ? null : state.propertyEditor,
     }))
     get()._persist()
     get().debouncedValidation()
   },
 
-  updateProperty(id, key, value) {
+  updateInstanceProperty(id, key, value) {
     get().clearSuggestions()
     set(state => ({
       instances: state.instances.map(inst =>
@@ -270,12 +273,25 @@ export const useCircuitStore = create((set, get) => ({
     get().debouncedValidation()
   },
 
+  // Backward-compatible alias for existing callers.
+  updateProperty(id, key, value) {
+    get().updateInstanceProperty(id, key, value)
+  },
+
+  setPropertyEditorState(editorState) {
+    set({ propertyEditor: editorState })
+  },
+
+  closePropertyEditor() {
+    set({ propertyEditor: null })
+  },
+
   selectInstance(id) {
     set({ selectedId: id })
   },
 
   clearSelection() {
-    set({ selectedId: null })
+    set({ selectedId: null, propertyEditor: null })
   },
 
   // ═══════════════ Wiring actions ══════════════════════════════════════════
@@ -387,6 +403,7 @@ export const useCircuitStore = create((set, get) => ({
       selectedId: null,
       highlightedIds: [],
       wireInProgress: null,
+      propertyEditor: null,
       validationResult: null,
       apiError: null,
       isValidating: false,

@@ -98,6 +98,7 @@ html, body, #root {
   padding: 0 14px;
   background: var(--bg-toolbar);
   border-bottom: 1px solid var(--border);
+  -webkit-user-select: none;
   user-select: none;
   z-index: 10;
 }
@@ -195,6 +196,7 @@ html, body, #root {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -489,6 +491,11 @@ html, body, #root {
   flex-shrink: 0;
 }
 
+.panel__props {
+  padding: 10px 8px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
 .panel__meta {
   padding: 8px 14px;
   border-top: 1px solid var(--border);
@@ -507,22 +514,72 @@ html, body, #root {
   background: var(--bg-card);
   border: 1px solid var(--border-bright);
   border-radius: 5px;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  padding: 8px;
   z-index: 20;
-  min-width: 140px;
+  min-width: 220px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
 
-.prop-edit-overlay label {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
+.prop-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.prop-edit-overlay input {
+.prop-editor--compact {
+  gap: 6px;
+}
+
+.prop-editor__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.prop-editor__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.prop-editor__subtitle {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.prop-editor__close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.prop-editor__close:hover {
+  color: var(--text-primary);
+}
+
+.prop-editor__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prop-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.prop-editor__label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.prop-editor__field input {
   background: var(--bg-canvas);
   border: 1px solid var(--border-bright);
   border-radius: 3px;
@@ -533,7 +590,11 @@ html, body, #root {
   width: 100%;
   outline: none;
 }
-.prop-edit-overlay input:focus { border-color: var(--lt-blue); }
+.prop-editor__field input:focus { border-color: var(--lt-blue); }
+
+.prop-editor__empty {
+  font-size: 11px;
+}
 
 /* Crosshair cursor on canvas pins */
 .canvas-svg g.component-node .pin-dot { cursor: crosshair; }

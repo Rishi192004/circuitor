@@ -3,12 +3,14 @@ import { useCircuitStore } from '../../store/circuitStore.js'
 import IssueCard from './IssueCard.jsx'
 import StatusBadge from './StatusBadge.jsx'
 import TopologyBanner from './TopologyBanner.jsx'
+import ComponentPropertiesEditor from '../properties/ComponentPropertiesEditor.jsx'
 
 export default function ValidationPanel() {
   const {
     isValidating, validationResult, apiError, clearApiError,
     highlightedIds, setHighlightedIds, clearHighlights,
-    suggestions, focusSuggestion
+    suggestions, focusSuggestion,
+    selectedId, instances, updateInstanceProperty
   } = useCircuitStore()
 
   const [activeIssueIdx, setActiveIssueIdx] = useState(null)
@@ -46,6 +48,7 @@ export default function ValidationPanel() {
   }
 
   const issues = validationResult?.issues ?? []
+  const selectedInstance = instances.find(inst => inst.id === selectedId) ?? null
   const showTopologyBanner =
     validationResult?.phase_reached === 'TOPOLOGY' && issues.some(i => i.severity === 'error')
 
@@ -55,6 +58,15 @@ export default function ValidationPanel() {
         <span>Validation</span>
         {validationResult && <StatusBadge status={validationResult.status} />}
       </div>
+
+      {selectedInstance && (
+        <div className="panel__props">
+          <ComponentPropertiesEditor
+            instance={selectedInstance}
+            onChange={(key, value) => updateInstanceProperty(selectedInstance.id, key, value)}
+          />
+        </div>
+      )}
 
       {/* Early-stop banner */}
       {showTopologyBanner && <TopologyBanner />}

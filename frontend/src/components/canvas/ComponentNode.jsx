@@ -38,6 +38,8 @@ export default function ComponentNode({ instance, svgRef }) {
     selectedId, highlightedIds,
     selectInstance, startWire, completeWire,
     wireInProgress,
+    setPropertyEditorState,
+    closePropertyEditor,
   } = useCircuitStore()
 
   const lib = COMPONENT_LIBRARY[instance.type]
@@ -66,12 +68,25 @@ export default function ComponentNode({ instance, svgRef }) {
     selectInstance(instance.id)
   }
 
+  function handleDoubleClick(e) {
+    e.stopPropagation()
+    if (wireInProgress) return
+    selectInstance(instance.id)
+    setPropertyEditorState({
+      instanceId: instance.id,
+      anchorX: e.clientX,
+      anchorY: e.clientY,
+      mode: 'popup',
+    })
+  }
+
   // ── MouseDown: start drag-to-move ──────────────────────────
   let dragStart = null
   function onMouseDown(e) {
     if (wireInProgress) return
     if (e.button !== 0) return
     e.stopPropagation()
+    closePropertyEditor()
     selectInstance(instance.id)
 
     const svg = svgRef.current
@@ -111,6 +126,7 @@ export default function ComponentNode({ instance, svgRef }) {
       className={nodeClass}
       transform={`translate(${x}, ${y})`}
       onClick={handleGroupClick}
+      onDoubleClick={handleDoubleClick}
       onMouseDown={onMouseDown}
       id={`node-${instance.id}`}
     >

@@ -75,7 +75,11 @@ export const COMPONENT_LIBRARY = {
       vee: 'power',
     },
     defaultProps: {
-      gain: '1e5', // ideal high gain
+      gain: '1e5',
+      vcc: '15V',
+      vee: '-15V',
+      input_offset: '1mV',
+      slew_rate: '1V/us',
     },
   },
   led: {
@@ -125,7 +129,13 @@ export const TEMPLATES = [
   {
     type: 'op_amp',
     pins: ['non_inverting', 'inverting', 'output', 'vcc', 'vee'],
-    properties: { gain: '1e5' },
+    properties: {
+      gain: '1e5',
+      vcc: '15V',
+      vee: '-15V',
+      input_offset: '1mV',
+      slew_rate: '1V/us',
+    },
   },
   {
     type: 'led',
