@@ -12,6 +12,7 @@ Circuitor addresses this gap with immediate, design-time intelligence: draw, val
 
 ## What Circuitor Does Today
 - Provides a modern frontend editor for component placement and wiring.
+- Supports component symbols for resistor, capacitor, voltage source, ground, op-amp, and LED in the sidebar and canvas.
 - Serializes circuit state into backend-compatible JSON.
 - Parses and normalizes electrical values (for example `1k -> 1000.0`).
 - Builds connectivity graphs from net/pin relationships.
@@ -20,6 +21,8 @@ Circuitor addresses this gap with immediate, design-time intelligence: draw, val
 - Returns `PipelineResult` with status, issues, suggestions, `can_simulate`, graph data, and metadata.
 - Renders issue cards and canvas highlights with suggestion-driven fixes.
 - Renders ghost components on the canvas for keyboard-driven suggestion acceptance.
+- Allows per-instance property editing from both the right panel and double-click popup editor.
+- Preserves free-text electrical values (`10k`, `100n`, `1V/us`, `2e5`) from UI through serializer to backend.
 
 ## End-to-End Product Flow
 1. User creates or edits a schematic in the frontend canvas.
@@ -57,6 +60,8 @@ The Pattern Engine **never** sets status, blocks simulation, or marks a circuit 
 - Serializer boundary (`toBackendFormat.js`) for API contract compliance
 - Validation UX (`ValidationPanel`) with issue cards and topology banner
 - Ghost suggestion layer (`parseSuggestions.js`) with Tab-to-focus / Tab-to-accept
+- Shared property editor UI used in both panel and popup modes
+- Store-driven property editor state (`setPropertyEditorState`, `closePropertyEditor`) and property mutation (`updateInstanceProperty`)
 
 ## Validation Engine Coverage
 Validation runs in ordered phases with fail-fast logic:
@@ -106,9 +111,26 @@ Each pattern emits `PatternSuggestion` objects with `pattern_id`, `type`, `compo
 - FastAPI integration is production-ready for web clients.
 - Auto-validation is integrated with debounced mutation tracking.
 - Network failure states are handled in the UI.
+- Cross-browser CSS compatibility improved for selection controls (`-webkit-user-select` + `user-select`).
 - Backend quality is covered by **94 unit/integration tests** with 0 failures.
 - Pattern Engine is fault-tolerant: a pattern exception is logged and skipped, never crashes the pipeline.
 - API response is fully backward compatible — no fields were removed.
+
+## Recent Feature Additions
+- **Op-Amp and LED visual support**
+  - Added dedicated `OpAmpSymbol` and `LEDSymbol` rendering in canvas nodes, sidebar previews, and ghost suggestions.
+  - Aligned both symbols with existing LTSpice-blue component styling for visual consistency.
+- **Editable component values (new UX)**
+  - Added right-panel property editing for selected components.
+  - Added double-click popup property editor anchored near component click location.
+  - Both editors write to the same store actions and update the same `instances[].properties` source of truth.
+- **Expanded op-amp defaults**
+  - `gain: 1e5`
+  - `vcc: 15V`
+  - `vee: -15V`
+  - `input_offset: 1mV`
+  - `slew_rate: 1V/us`
+  - These defaults are aligned in both component library metadata and template payload defaults.
 
 ## Differentiators
 - Real-time actionable validation during circuit creation, not only after export.
@@ -129,4 +151,5 @@ Each pattern emits `PatternSuggestion` objects with `pattern_id`, `type`, `compo
 - Tests: `python -m unittest discover tests`
 - Pattern tests only: `python -m unittest discover tests/patterns`
 - Integration tests only: `python -m unittest discover tests/integration`
-- API Server: `uvicorn api_server:app --reload --port 8000`
+- API Server: `uvicorn api_server:app --reload --port 8001`
+- Frontend dev server: `cd frontend && npm run dev`
