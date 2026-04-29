@@ -78,13 +78,14 @@ class TestCircuitOrchestrator(unittest.TestCase):
             self.assertIn("ghostComponents", res_dict)
             
             # 2. Verify Validation Logic
-            self.assertFalse(res_dict["isSimulationReady"], "Circuit should not be ready due to floating pin error")
+            self.assertFalse(res_dict["isSimulationReady"], "Circuit should not be ready due to errors")
             error_codes = [e["errorCode"] for e in res_dict["errors"]]
             self.assertIn("E101", error_codes, "Should detect FloatingPinRule error (E101)")
+            self.assertIn("LED_MISSING_RESISTOR", error_codes, "Should detect escalated LED_MISSING_RESISTOR error")
             
-            # 3. Verify Pattern Logic (Still runs despite validation error)
+            # 3. Verify Pattern Logic (Escalated patterns are moved out of suggestions)
             pattern_ids = [s["patternId"] for s in res_dict["suggestions"]]
-            self.assertIn("LED_MISSING_RESISTOR", pattern_ids, "Should detect LED_MISSING_RESISTOR pattern")
+            self.assertNotIn("LED_MISSING_RESISTOR", pattern_ids, "Escalated pattern should not be in suggestions")
             
             # 4. Verify Ghost Component mapping
             ghost_types = [g["type"] for g in res_dict["ghostComponents"]]

@@ -195,3 +195,12 @@ class LEDPattern(Pattern):
                     break
 
         return suggestions
+
+    def escalation_condition(self, circuit: Circuit, suggestion: PatternSuggestion) -> bool:
+        """
+        Escalates LED_MISSING_RESISTOR to an error because driving an LED 
+        directly from a source is a physical safety/hardware failure hazard.
+        """
+        if suggestion.pattern_id == self.pattern_id:
+            return True
+        return False

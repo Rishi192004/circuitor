@@ -40,6 +40,7 @@ class PatternSuggestion:
     priority: int = 50
     target_component_ids: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    severity: str = "suggestion"  # "suggestion", "warning", or "error"
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialise to a JSON-safe dictionary for the API response."""
@@ -50,6 +51,7 @@ class PatternSuggestion:
             "reason": self.reason,
             "confidence": round(self.confidence, 3),
             "priority": self.priority,
+            "severity": self.severity,
             "target_component_ids": self.target_component_ids,
             "metadata": self.metadata,
         }

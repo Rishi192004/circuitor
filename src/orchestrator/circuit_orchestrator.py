@@ -74,17 +74,6 @@ class CircuitOrchestrator:
         pattern_results = []
         ghost_components = []
         for s in suggestions:
-            p_res = PatternResult(
-                pattern_id=s.pattern_id,
-                type=s.type,
-                reason=s.reason,
-                confidence=s.confidence,
-                priority=s.priority,
-                target_component_ids=s.target_component_ids,
-                metadata=s.metadata
-            )
-            pattern_results.append(p_res)
-            
             # Map specific suggestions to ghost components for the UI
             if s.type == "ADD_COMPONENT":
                 ghost_components.append(GhostComponent(
@@ -92,6 +81,38 @@ class CircuitOrchestrator:
                     reason=s.reason,
                     metadata=s.metadata
                 ))
+
+            # Handle escalated suggestions (Pattern -> Validation Error/Warning)
+            if s.severity in ("error", "warning"):
+                v_res = ValidationResult(
+                    error_code=s.pattern_id,
+                    rule_name=f"Pattern Escalation: {s.pattern_id}",
+                    severity=s.severity,
+                    target={"type": "multiple", "component_ids": s.target_component_ids},
+                    technical_message=f"Escalated from Pattern Engine: {s.reason}",
+                    user_explanation=s.reason,
+                    suggested_fix={
+                        "action": s.type.lower(),
+                        "description": s.reason,
+                        "suggested_component_type": s.component if s.type == "ADD_COMPONENT" else None
+                    }
+                )
+                if s.severity == "error":
+                    errors.append(v_res)
+                else:
+                    warnings.append(v_res)
+            else:
+                # Regular non-blocking suggestion
+                p_res = PatternResult(
+                    pattern_id=s.pattern_id,
+                    type=s.type,
+                    reason=s.reason,
+                    confidence=s.confidence,
+                    priority=s.priority,
+                    target_component_ids=s.target_component_ids,
+                    metadata=s.metadata
+                )
+                pattern_results.append(p_res)
 
         is_simulation_ready = len(errors) == 0
 

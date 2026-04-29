@@ -62,3 +62,18 @@ class Pattern(ABC):
             A (possibly empty) list of :class:`PatternSuggestion` objects.
             Must never raise; return ``[]`` on any unexpected condition.
         """
+
+    def escalation_condition(self, circuit: Circuit, suggestion: PatternSuggestion) -> bool:
+        """
+        Optional: determine if a specific suggestion should be escalated from 
+        a non-blocking suggestion to a fatal validation error.
+        
+        Args:
+            circuit:    The current circuit model.
+            suggestion: The suggestion emitted by this pattern.
+            
+        Returns:
+            True if the suggestion should be escalated to 'error' severity.
+            Default is False (non-blocking).
+        """
+        return False

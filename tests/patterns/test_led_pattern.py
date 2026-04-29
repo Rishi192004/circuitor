@@ -14,6 +14,7 @@ import unittest
 from src.models.circuit import Circuit
 from src.models.component import Component, ComponentTemplate, PinTemplate
 from src.models.net import Net, PinConnection
+from src.models.suggestion import PatternSuggestion
 from src.patterns.led_pattern import LEDPattern
 
 
@@ -173,6 +174,16 @@ class TestLEDPattern(unittest.TestCase):
         circuit = build_circuit(self.templates, comps, nets)
         suggestions = self.pattern.match(circuit, [])
         self.assertIn("net_id", suggestions[0].metadata)
+
+    def test_escalation_condition_escalates_missing_resistor(self):
+        """The missing resistor pattern should always escalate to an error."""
+        s = PatternSuggestion(
+            pattern_id="LED_MISSING_RESISTOR",
+            type="ADD_COMPONENT",
+            component="resistor",
+            reason="test"
+        )
+        self.assertTrue(self.pattern.escalation_condition(None, s))
 
 
 if __name__ == "__main__":

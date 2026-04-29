@@ -70,6 +70,15 @@ class PatternEngine:
             try:
                 results = pattern.match(circuit, validation_issues)
                 if results:
+                    # Apply severity escalation logic
+                    for suggestion in results:
+                        if pattern.escalation_condition(circuit, suggestion):
+                            suggestion.severity = "error"
+                            logger.info(
+                                "Pattern '%s' escalated to ERROR severity.",
+                                pattern.pattern_id
+                            )
+
                     logger.info(
                         "Pattern '%s' fired %d suggestion(s).",
                         pattern.pattern_id,
