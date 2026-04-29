@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.main import run_pipeline
+from src.orchestrator.circuit_orchestrator import CircuitOrchestrator
 
 app = FastAPI(title="Circuitor API", version="1.0.0")
 
@@ -28,18 +28,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+orchestrator = CircuitOrchestrator()
+
 
 @app.post("/api/run_pipeline")
 async def validate_circuit(circuit_data: dict):
     """
-    Validate a circuit. Accepts the full Circuit JSON schema, returns a PipelineResult.
+    Validate a circuit. Accepts the full Circuit JSON schema, returns a unified AnalysisResult.
     The engine currently reads from file paths, so we write a temp file, run, then clean up.
     """
     tmp_fd, tmp_path = tempfile.mkstemp(suffix=".json")
     try:
         with os.fdopen(tmp_fd, "w") as f:
             json.dump(circuit_data, f)
-        result = run_pipeline(tmp_path)
+        result = orchestrator.analyze(tmp_path)
         return result.to_dict()
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
