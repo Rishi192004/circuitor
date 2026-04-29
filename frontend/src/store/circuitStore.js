@@ -355,7 +355,7 @@ export const useCircuitStore = create((set, get) => ({
     const state = get()
     
     // Minimum threshold guard
-    if (state.instances.length < 2) {
+    if (state.instances.length < 1) {
       set({ validationResult: null, apiError: null, isValidating: false, suggestions: [] })
       return
     }
@@ -364,7 +364,6 @@ export const useCircuitStore = create((set, get) => ({
     set({ isValidating: true, apiError: null, validationResult: null, highlightedIds: [] })
 
     try {
-      // Build the frontend circuitState, then convert to the backend wire format
       const circuitState = {
         circuit_id: state.circuit_id,
         templates: state.templates,
@@ -373,13 +372,27 @@ export const useCircuitStore = create((set, get) => ({
       }
       const backendPayload = toBackendFormat(circuitState)
       const result = await validateCircuit(backendPayload)
-      set({ validationResult: result, isValidating: false })
-      if (result.status === 'ok') {
-        get().clearSuggestions()
-      } else {
-        const newSuggestions = parseSuggestionsFromResult(result, state.instances)
-        set({ suggestions: newSuggestions })
-      }
+      
+      // result matches the new AnalysisResult shape from backend
+      set({ 
+        validationResult: result, 
+        isValidating: false,
+        // We still map backend ghostComponents to our local suggestions state for the UI
+        suggestions: (result.ghostComponents || []).map((gc, i) => ({
+          ...gc,
+          id: `ghost_${i}`,
+          focused: i === 0,
+          // Since the backend doesn't provide positions, we still need to calculate them here
+          // or we can just use the reason/metadata to drive the existing parser.
+          // For now, I'll keep the parser but update it to use the new unified results.
+        }))
+      })
+
+      // Re-run the local suggestion parser to get positions (since backend doesn't provide them)
+      // Actually, I'll update parseSuggestionsFromResult to take the new result shape.
+      const newSuggestions = parseSuggestionsFromResult(result, state.instances)
+      set({ suggestions: newSuggestions })
+
     } catch (err) {
       set({ apiError: err.message, isValidating: false, suggestions: [] })
     }

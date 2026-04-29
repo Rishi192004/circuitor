@@ -23,39 +23,32 @@ function isOccupied(instances, x, y) {
   return instances.some(inst => inst.position.x === x && inst.position.y === y)
 }
 
-export function parseSuggestionsFromResult(pipelineResult, instances) {
-  if (!pipelineResult || !pipelineResult.issues) return []
+export function parseSuggestionsFromResult(analysisResult, instances) {
+  if (!analysisResult || !analysisResult.ghostComponents) return []
 
   const suggestions = []
   let suggestionCount = 0
 
-  pipelineResult.issues.forEach(issue => {
-    const fix = issue.suggested_fix
-    const target = issue.target
-    if (!fix || !target) return
+  analysisResult.ghostComponents.forEach(gc => {
+    const action = gc.metadata?.action || "add_component"
+    const compType = gc.type
+    const attachTo = gc.metadata?.attach_to || gc.metadata?.target_pin // Adjust based on backend metadata
+    
+    let compId, pinName
+    if (attachTo && attachTo.includes('.')) {
+      [compId, pinName] = attachTo.split('.')
+    } else if (gc.metadata?.target_component_id) {
+       compId = gc.metadata.target_component_id
+       pinName = gc.metadata.target_pin_name || Object.keys(COMPONENT_LIBRARY[instances.find(i => i.id === compId)?.type]?.pins || {})[0]
+    }
 
-    const action = fix.action
-    const compType = ACTION_MAP[action]
-    if (!compType) return // Not actionable with a ghost
-
-    let compId = target.component_id
-    let pinName = target.pin_name
-
-    // Special case for global issues that suggest adding components
-    if (target.type === 'global') {
-      if (action === 'add_ground') {
-        const source = instances.find(i => i.type === 'dc_voltage_source')
-        if (source) {
-          compId = source.id
-          pinName = 'negative'
-        }
-      }
-      // Fallback for any global issue if not resolved above
-      if (!compId && instances.length > 0) {
-        compId = instances[0].id
-        const lib = COMPONENT_LIBRARY[instances[0].type]
-        pinName = Object.keys(lib.pins)[0]
-      }
+    // Fallback for global issues (like missing ground)
+    if (!compId && instances.length > 0) {
+      // Find a suitable source to attach a ground to, or just the first component
+      const source = instances.find(i => i.type === 'dc_voltage_source')
+      compId = source ? source.id : instances[0].id
+      const lib = COMPONENT_LIBRARY[instances.find(i => i.id === compId).type]
+      pinName = source ? 'negative' : Object.keys(lib.pins)[0]
     }
 
     if (!compId || !pinName) return
@@ -66,22 +59,18 @@ export function parseSuggestionsFromResult(pipelineResult, instances) {
     const offset = PIN_OFFSETS[inst.type]?.[pinName]
     if (!offset) return
 
-    // Absolute position of the target pin
     const pinX = inst.position.x + offset.x
     const pinY = inst.position.y + offset.y
 
-    // Try placing 60px BELOW (y + 60), if occupied try RIGHT, LEFT, ABOVE
+    // Layout logic (fanning out suggestions)
     let gx = pinX
     let gy = pinY + 60
-
-    if (isOccupied(instances, gx, gy)) {
-      gx = pinX + 60; gy = pinY;
-      if (isOccupied(instances, gx, gy)) {
-        gx = pinX - 60; gy = pinY;
-        if (isOccupied(instances, gx, gy)) {
-          gx = pinX; gy = pinY - 60;
-        }
-      }
+    let attempts = 0
+    while (isOccupied(instances, gx, gy) && attempts < 4) {
+      if (attempts === 0) { gx = pinX + 60; gy = pinY }
+      else if (attempts === 1) { gx = pinX - 60; gy = pinY }
+      else if (attempts === 2) { gx = pinX; gy = pinY - 60 }
+      attempts++
     }
 
     suggestions.push({
@@ -90,6 +79,7 @@ export function parseSuggestionsFromResult(pipelineResult, instances) {
       component_type: compType,
       attach_to: `${compId}.${pinName}`,
       position: { x: gx, y: gy },
+      reason: gc.reason,
       focused: false
     })
   })

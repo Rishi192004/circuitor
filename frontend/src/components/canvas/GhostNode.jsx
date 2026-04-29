@@ -50,34 +50,56 @@ export default function GhostNode({ suggestion }) {
     )
   }
 
-  const opacity = isFocused ? 0.65 : 0.35
-  const glow = isFocused ? '#00e5ff' : '#4fc3f7'
+  const opacity = isFocused ? 0.7 : 0.4
+  const glow = isFocused ? '#7c4dff' : '#448aff' // Purple for focus, blue for idle
 
   return (
-    <g>
+    <g 
+      style={{ cursor: 'pointer', pointerEvents: 'all' }}
+      onClick={() => useCircuitStore.getState().acceptSuggestion(suggestion.id)}
+    >
       {line}
       <g
         className="ghost-node"
         transform={`translate(${x}, ${y})`}
         style={{
-          opacity,
-          pointerEvents: 'none',
-          strokeDasharray: '6 3',
-          filter: `drop-shadow(0 0 6px ${glow})`
+          filter: `drop-shadow(0 0 8px ${glow})`,
+          opacity: isFocused ? 0.8 : 'var(--ghost-opacity)'
         }}
       >
+        <rect
+          x="-30" y="-30" width="60" height="60"
+          rx="4" fill="rgba(124, 77, 255, 0.05)"
+          stroke={glow} strokeWidth="1"
+        />
+        
         {Symbol && <Symbol />}
         
-        {isFocused && (
+        {/* "+" Add Icon Badge */}
+        <g transform="translate(20, -20)">
+          <circle r="7" fill={glow} />
           <text
-            x="0"
-            y="-30"
-            textAnchor="middle"
-            fill="var(--lt-blue)"
-            style={{ fontSize: '10px', fontWeight: 'bold', textShadow: '0 0 4px #000' }}
+            y="0.5" textAnchor="middle" dominantBaseline="middle"
+            fill="white" style={{ fontSize: '12px', fontWeight: 'bold' }}
           >
-            Tab to add {lib.label}
+            +
           </text>
+        </g>
+
+        {isFocused && (
+          <g transform="translate(0, 45)">
+            <rect 
+              x="-60" y="-12" width="120" height="20" rx="4"
+              fill="rgba(0,0,0,0.8)" 
+            />
+            <text
+              textAnchor="middle"
+              fill="white"
+              style={{ fontSize: '10px', fontWeight: 'bold' }}
+            >
+              Click or Tab to place {lib.label}
+            </text>
+          </g>
         )}
       </g>
     </g>

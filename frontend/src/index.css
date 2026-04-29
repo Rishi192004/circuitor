@@ -33,6 +33,13 @@
   --color-error-glow:   rgba(240,77,77,0.4);
   --color-warning-glow: rgba(245,166,35,0.35);
 
+  /* New Analysis Language Tokens */
+  --error-red:     #ff4444;
+  --warning-orange: #ff9800;
+  --suggestion-purple: #7c4dff;
+  --suggestion-blue: #448aff;
+  --ghost-opacity: 0.5;
+
   /* Text */
   --text-primary:  #d0d8e4;
   --text-muted:    #5a6476;
@@ -598,3 +605,72 @@ html, body, #root {
 
 /* Crosshair cursor on canvas pins */
 .canvas-svg g.component-node .pin-dot { cursor: crosshair; }
+
+/* ---------- Analysis Visual Language ---------- */
+
+@keyframes animate-shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+.animate-shake {
+  animation: animate-shake 0.25s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.analysis-highlight {
+  pointer-events: none;
+}
+
+.has-error {
+  /* Placeholder for linting, actual styles might be on children */
+}
+
+.has-warning {
+  /* Placeholder for linting */
+}
+
+/* Sidebar Sections */
+.analysis-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.analysis-section__header {
+  padding: 12px 14px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.analysis-section__count {
+  background: var(--border-bright);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  color: var(--text-primary);
+}
+
+.analysis-section--issues .analysis-section__header { color: var(--color-warning); }
+.analysis-section--suggestions .analysis-section__header { color: var(--suggestion-purple); }
+
+.ghost-card {
+  border-left: 3px dashed var(--suggestion-blue) !important;
+  opacity: 0.8;
+}
+.ghost-card:hover { opacity: 1; border-left-style: solid !important; }
+
+.ghost-node {
+  opacity: var(--ghost-opacity);
+  stroke-dasharray: 4 4;
+}

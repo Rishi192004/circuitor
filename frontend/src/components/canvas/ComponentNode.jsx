@@ -1,7 +1,9 @@
 import React from 'react'
 import { useCircuitStore } from '../../store/circuitStore.js'
+import { useAnalysisOverlay } from '../../hooks/useAnalysisOverlay.js'
 import { COMPONENT_LIBRARY } from '../../constants/components.js'
 import PinDot from './PinDot.jsx'
+import ErrorHighlight from './ErrorHighlight.jsx'
 import ResistorSymbol from './symbols/ResistorSymbol.jsx'
 import CapacitorSymbol from './symbols/CapacitorSymbol.jsx'
 import VoltageSourceSymbol from './symbols/VoltageSourceSymbol.jsx'
@@ -35,29 +37,28 @@ const LABEL_OFFSET = {
  */
 export default function ComponentNode({ instance, svgRef }) {
   const {
-    selectedId, highlightedIds,
+    selectedId,
     selectInstance, startWire, completeWire,
     wireInProgress,
     setPropertyEditorState,
     closePropertyEditor,
+    validationResult
   } = useCircuitStore()
+
+  const analysisOverlay = useAnalysisOverlay(validationResult)
+  const overlayConfig = analysisOverlay[instance.id]
 
   const lib = COMPONENT_LIBRARY[instance.type]
   if (!lib) return null
 
   const Symbol    = SYMBOLS[instance.type]
   const isSelected = selectedId === instance.id
-  const { x, y }  = instance.position   // ← new shape
-
-  // Highlight class from panel click
-  const highlight       = highlightedIds.find(h => h.id === instance.id)
-  const isHighlightError   = highlight?.severity === 'error'
-  const isHighlightWarning = highlight?.severity === 'warning'
+  const { x, y }  = instance.position
 
   let nodeClass = 'component-node'
-  if (isSelected)         nodeClass += ' selected'
-  if (isHighlightError)   nodeClass += ' highlighted-error'
-  if (isHighlightWarning) nodeClass += ' highlighted-warning'
+  if (isSelected) nodeClass += ' selected'
+  if (overlayConfig?.type === 'error') nodeClass += ' has-error'
+  if (overlayConfig?.type === 'warning') nodeClass += ' has-warning'
 
   const labelOff = LABEL_OFFSET[instance.type] ?? { ref: { x: 0, y: -18 }, val: { x: 0, y: -8 } }
 
@@ -131,6 +132,7 @@ export default function ComponentNode({ instance, svgRef }) {
       id={`node-${instance.id}`}
     >
       {Symbol && <Symbol />}
+      <ErrorHighlight config={overlayConfig} />
 
       {/* Reference designator — LTSpice green */}
       <text

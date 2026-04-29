@@ -15,20 +15,20 @@ const ACTION_LABEL = {
 
 export default function IssueCard({ issue, isActive, onClick }) {
   const { suggestions } = useCircuitStore()
-  const { severity, error_code, rule_name, user_explanation, technical_message, suggested_fix, target } = issue
+  const { severity, errorCode, ruleName, userExplanation, technicalMessage, suggestedFix, target } = issue
 
   const matchingSuggestion = suggestions.find(s => 
-    s.action === suggested_fix?.action && 
+    s.action === suggestedFix?.action && 
     (target?.type === 'global' || s.attach_to === `${target?.component_id}.${target?.pin_name}`)
   )
 
-  const actionLabel = suggested_fix?.action
-    ? (ACTION_LABEL[suggested_fix.action] ?? `→ ${suggested_fix.description ?? suggested_fix.action}`)
+  const actionLabel = suggestedFix?.action
+    ? (ACTION_LABEL[suggestedFix.action] ?? `→ ${suggestedFix.description ?? suggestedFix.action}`)
     : null
 
   return (
     <div
-      id={`issue-${error_code}`}
+      id={`issue-${errorCode}`}
       className={`issue-card issue-card--${severity}${isActive ? ' active' : ''}`}
       onClick={onClick}
       title="Click to highlight on canvas"
@@ -37,7 +37,7 @@ export default function IssueCard({ issue, isActive, onClick }) {
         <span className={`issue-card__severity issue-card__severity--${severity}`}>
           {SEVERITY_ICON[severity]} {severity}
         </span>
-        <span className="issue-card__code">{error_code}</span>
+        <span className="issue-card__code">{errorCode}</span>
         {matchingSuggestion && (
           <span className="issue-card__ghost-badge" style={{ marginLeft: 8, fontSize: 10, background: 'rgba(79, 195, 247, 0.1)', color: 'var(--lt-blue)', padding: '2px 6px', borderRadius: 4 }}>
             👻 Shown on canvas
@@ -52,8 +52,8 @@ export default function IssueCard({ issue, isActive, onClick }) {
         )}
       </div>
 
-      <div className="issue-card__rule">{rule_name}</div>
-      <div className="issue-card__explanation">{user_explanation}</div>
+      <div className="issue-card__rule">{ruleName}</div>
+      <div className="issue-card__explanation">{userExplanation}</div>
 
       {actionLabel && (
         <div className="issue-card__fix">
