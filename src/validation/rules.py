@@ -315,4 +315,55 @@ class OpAmpPowerRule(ValidationRule):
                         severity="error"
                     ))
         return issues
-
+class GroundedOutputRule(ValidationRule):
+    @property
+    def name(self) -> str:
+        return "Grounded Output Pin Check"
+        
+    def validate(self, circuit: Circuit) -> List[ValidationIssue]:
+        issues = []
+        ground_nets = set()
+        
+        # 1. Identify all nets connected to a Ground component
+        for comp_id, comp in circuit.components.items():
+            template = circuit.component_templates.get(comp.type)
+            if template and (template.category == "reference" or "ground" in template.id.lower()):
+                for net_id, net in circuit.nets.items():
+                    if any(ep.component_id == comp_id for ep in net.endpoints):
+                        ground_nets.add(net_id)
+        
+        # 2. Check for output pins on those nets
+        for net_id in ground_nets:
+            net = circuit.nets.get(net_id)
+            if not net: continue
+            
+            for endpoint in net.endpoints:
+                comp = circuit.components.get(endpoint.component_id)
+                if not comp: continue
+                
+                template = circuit.component_templates.get(comp.type)
+                if not template: continue
+                
+                # SKIP SOURCES: It's normal to ground one side of a battery/source
+                if template.category == "source":
+                    continue
+                
+                # Check if this specific pin is an output
+                for pin_template in template.pins_template:
+                    if pin_template.name == endpoint.pin_name and pin_template.type == "output":
+                        issues.append(ValidationIssue(
+                            error_code="E305",
+                            rule_name=self.name,
+                            technical_message=f"Output pin '{endpoint.component_id}.{endpoint.pin_name}' is connected to ground net '{net_id}'.",
+                            user_explanation=f"You have connected the output of '{endpoint.component_id}' directly to Ground. This will likely short out the output stage of the component and could cause damage.",
+                            suggested_fix={
+                                "action": "remove_ground_connection",
+                                "description": "Disconnect the output pin from ground. If you intended to pull the signal low, use a pull-down resistor instead.",
+                                "target_component_id": endpoint.component_id,
+                                "target_pin_name": endpoint.pin_name
+                            },
+                            component_id=endpoint.component_id,
+                            pin_name=endpoint.pin_name,
+                            severity="error"
+                        ))
+        return issues

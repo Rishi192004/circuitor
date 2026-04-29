@@ -186,5 +186,25 @@ class TestValidationRules(unittest.TestCase):
         self.assertEqual(len(issues), 1)
         self.assertIn("KVL Violation", issues[0].technical_message)
 
+    def test_grounded_output_rule_pass(self):
+        comps = {"U1": self._build_comp("U1", "logic_gate", {}), "G1": self._build_comp("G1", "ground", {})}
+        nets = {
+            "n1": self._build_net("n1", [PinConnection("U1", "in1"), PinConnection("G1", "gnd")])
+        }
+        circuit = self._build_circuit(comps, nets)
+        # in1 is an input, grounding it is fine
+        from src.validation.rules import GroundedOutputRule
+        self.assertEqual(len(GroundedOutputRule().validate(circuit)), 0)
+
+    def test_grounded_output_rule_fail(self):
+        comps = {"U1": self._build_comp("U1", "logic_gate", {}), "G1": self._build_comp("G1", "ground", {})}
+        nets = {
+            "n1": self._build_net("n1", [PinConnection("U1", "out1"), PinConnection("G1", "gnd")])
+        }
+        circuit = self._build_circuit(comps, nets)
+        # out1 is an output, grounding it is an error
+        from src.validation.rules import GroundedOutputRule
+        self.assertEqual(len(GroundedOutputRule().validate(circuit)), 1)
+
 if __name__ == '__main__':
     unittest.main()

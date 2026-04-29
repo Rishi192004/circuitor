@@ -17,10 +17,12 @@ from src.validation.rules import (
     UnpoweredCircuitRule,
     ZeroResistanceRule,
     VoltageSourceLoopRule,
-    OpAmpPowerRule
+    OpAmpPowerRule,
+    GroundedOutputRule
 )
 from src.models.pipeline import PipelineResult
 from src.patterns import PatternEngine, LEDPattern, OpAmpPattern, VoltageDividerPattern
+from src.patterns.decoupling_pattern import DecouplingCapacitorPattern
 
 # Configure logging
 logging.basicConfig(
@@ -39,7 +41,8 @@ ALL_RULES = [
     UnpoweredCircuitRule(),
     ZeroResistanceRule(),
     VoltageSourceLoopRule(),
-    OpAmpPowerRule()
+    OpAmpPowerRule(),
+    GroundedOutputRule()
 ]
 
 # All registered patterns for the Pattern Engine.
@@ -47,6 +50,7 @@ ALL_PATTERNS = [
     LEDPattern(),
     OpAmpPattern(),
     VoltageDividerPattern(),
+    DecouplingCapacitorPattern(),
 ]
 
 

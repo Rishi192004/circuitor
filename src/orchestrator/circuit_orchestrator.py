@@ -7,6 +7,7 @@ from src.validation.validator import CircuitValidator
 from src.patterns import PatternEngine
 from src.hints.engine import SimulationHintEngine
 from src.hints.no_load_hint import NoLoadSourceHint
+from src.hints.floating_input_hint import FloatingOpAmpInputHint
 from src.models.analysis_result import AnalysisResult, ValidationResult, PatternResult, GhostComponent, HintResult
 
 # Import registered rules and patterns from main pipeline
@@ -56,7 +57,7 @@ class CircuitOrchestrator:
         suggestions = pattern_engine.run(circuit, issues)
 
         # 6. Run Simulation Hint Engine
-        hint_engine = SimulationHintEngine([NoLoadSourceHint()])
+        hint_engine = SimulationHintEngine([NoLoadSourceHint(), FloatingOpAmpInputHint()])
         hints = hint_engine.run(circuit)
 
         # 7. Map to Unified Result Shape
