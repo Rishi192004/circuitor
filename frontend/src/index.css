@@ -674,3 +674,13 @@ html, body, #root {
   opacity: var(--ghost-opacity);
   stroke-dasharray: 4 4;
 }
+
+.hint-card {
+  border-left-color: var(--text-muted) !important;
+  border-left-style: dotted !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.analysis-section--hints .analysis-section__header {
+  color: var(--text-muted);
+}

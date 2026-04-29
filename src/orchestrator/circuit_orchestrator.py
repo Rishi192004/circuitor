@@ -5,7 +5,9 @@ from src.parser.normalizer import ValueNormalizer
 from src.graph.builder import GraphBuilder
 from src.validation.validator import CircuitValidator
 from src.patterns import PatternEngine
-from src.models.analysis_result import AnalysisResult, ValidationResult, PatternResult, GhostComponent
+from src.hints.engine import SimulationHintEngine
+from src.hints.no_load_hint import NoLoadSourceHint
+from src.models.analysis_result import AnalysisResult, ValidationResult, PatternResult, GhostComponent, HintResult
 
 # Import registered rules and patterns from main pipeline
 from src.main import ALL_RULES, ALL_PATTERNS
@@ -53,7 +55,11 @@ class CircuitOrchestrator:
         pattern_engine = PatternEngine(ALL_PATTERNS)
         suggestions = pattern_engine.run(circuit, issues)
 
-        # 6. Map to Unified Result Shape
+        # 6. Run Simulation Hint Engine
+        hint_engine = SimulationHintEngine([NoLoadSourceHint()])
+        hints = hint_engine.run(circuit)
+
+        # 7. Map to Unified Result Shape
         errors = []
         warnings = []
         for issue in issues:
@@ -114,6 +120,15 @@ class CircuitOrchestrator:
                 )
                 pattern_results.append(p_res)
 
+        hint_results = [
+            HintResult(
+                hint_id=h.hint_id,
+                message=h.message,
+                target_component_ids=h.target_component_ids,
+                metadata=h.metadata
+            ) for h in hints
+        ]
+
         is_simulation_ready = len(errors) == 0
 
         return AnalysisResult(
@@ -121,5 +136,6 @@ class CircuitOrchestrator:
             errors=errors,
             warnings=warnings,
             suggestions=pattern_results,
-            ghost_components=ghost_components
+            ghost_components=ghost_components,
+            hints=hint_results
         )

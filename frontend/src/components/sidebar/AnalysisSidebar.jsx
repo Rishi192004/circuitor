@@ -14,8 +14,11 @@ export default function AnalysisSidebar() {
     isValidating, validationResult, suggestions, focusSuggestion
   } = useCircuitStore();
 
+  const [hintsExpanded, setHintsExpanded] = React.useState(false);
+
   const errors = validationResult?.errors || [];
   const warnings = validationResult?.warnings || [];
+  const hints = validationResult?.hints || [];
   const allIssues = [...errors, ...warnings];
 
   return (
@@ -89,6 +92,47 @@ export default function AnalysisSidebar() {
                     </div>
                   </div>
                 ))
+              )}
+            </section>
+
+            <div className="toolbar__divider" style={{ width: '100%', height: '1px', margin: '8px 0' }} />
+
+            {/* 3. SIMULATION NOTES SECTION (Informational Hints) */}
+            <section className="analysis-section analysis-section--hints">
+              <div 
+                className="analysis-section__header" 
+                style={{ cursor: 'pointer' }}
+                onClick={() => setHintsExpanded(!hintsExpanded)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '10px' }}>{hintsExpanded ? '▼' : '▶'}</span>
+                  <span>Simulation Notes</span>
+                </div>
+                <span className="analysis-section__count">{hints.length}</span>
+              </div>
+
+              {hintsExpanded && (
+                <div className="analysis-section__content" style={{ padding: '0 8px 8px' }}>
+                  {hints.length === 0 ? (
+                    <div className="panel__empty" style={{ minHeight: '40px' }}>
+                      <div className="panel__empty-text" style={{ fontSize: '10px' }}>No notes for this circuit.</div>
+                    </div>
+                  ) : (
+                    hints.map((hint, idx) => (
+                      <div 
+                        key={`hint-${idx}`}
+                        className="issue-card hint-card"
+                      >
+                        <div className="issue-card__rule" style={{ fontSize: '10px' }}>
+                          ℹ {hint.hintId}
+                        </div>
+                        <div className="issue-card__explanation" style={{ fontSize: '10px', marginBottom: 0 }}>
+                          {hint.message}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               )}
             </section>
           </>
