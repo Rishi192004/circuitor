@@ -82,6 +82,7 @@ Validation runs in ordered phases with fail-fast logic:
 - **Semantics**:
   - `ZeroResistanceRule` — detects resistors with zero or invalid resistance
   - `GroundedOutputRule` — detects output pins shorted directly to ground (excluding power sources)
+  - `SourceConflictRule` — detects multiple voltage sources on the same net with different values
 
 ## Pattern Engine Coverage
 Patterns run after validation and are always non-blocking:
@@ -97,6 +98,9 @@ Patterns run after validation and are always non-blocking:
 - **`DecouplingCapacitorPattern`** (`priority=40`, `confidence=0.85`):
   Detects active components (like Op-Amps) missing decoupling capacitors on power supply rails. Suggests `ADD_COMPONENT(capacitor)`.
 
+- **`LowPassFilterPattern`** (`priority=60`, `confidence=0.90`):
+  Detects series resistor and capacitor to ground configurations. Suggests `INSPECT_NODE`.
+
 - **`VoltageDividerPattern`** (`priority=30`, `confidence=0.80`):
   Detects two resistors forming a series voltage divider across a source where the midpoint node is unused. Suggests `INSPECT_NODE` to exploit the voltage tap.
 
@@ -110,6 +114,9 @@ Hints run alongside patterns and provide informational context for simulation:
 
 - **`FloatingOpAmpInputHint`** (`FLOATING_OPAMP_INPUT`):
   Detects if an Op-Amp's non-inverting or inverting input is left floating. Warns about unpredictable simulation behavior like rail-slamming.
+
+- **`HighValueResistorHint`** (`HIGH_VALUE_RESISTOR`):
+  Detects resistors > 1M Ohm which can increase node sensitivity to noise.
 
 Each hint emits `SimulationHint` objects with `hint_id`, `message`, `target_component_ids`, and `metadata`.
 
@@ -158,6 +165,9 @@ Each hint emits `SimulationHint` objects with `hint_id`, `message`, `target_comp
   - Expanded Validation Engine with `GroundedOutputRule`.
   - Expanded Pattern Engine with `DecouplingCapacitorPattern`.
   - Expanded Hint Engine with `FloatingOpAmpInputHint`.
+- **Autonomous Agent Implementation**
+  - Created `agents/autonomous_agent/` for self-contained engineering logic.
+  - Implemented `SourceConflictRule` (Validation), `LowPassFilterPattern` (Pattern), and `HighValueResistorHint` (Hint) based on agent-discovered gaps.
 
 ## Differentiators
 - Real-time actionable validation during circuit creation, not only after export.
